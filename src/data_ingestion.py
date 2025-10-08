@@ -30,11 +30,11 @@ def fetch_weather():
 def save_to_csv(data):
     if not os.path.exists(DATA_PATH):
         df = pd.DataFrame([data])
-        df.to_csv(DATA_PATH, index=False)
     else:
         df = pd.read_csv(DATA_PATH)
-        df = df.append(data, ignore_index=True)
-        df.to_csv(DATA_PATH, index=False)
+        df = pd.concat([df, pd.DataFrame([data])], ignore_index=True)
+    df.to_csv(DATA_PATH, index=False)
+
 
 # ---- MAIN ----
 if __name__ == "__main__":
