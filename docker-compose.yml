@@ -1,5 +1,4 @@
-# docker-compose.yml
-# Airflow 2.9.1 + PostgreSQL, Windows-friendly
+version: '3.9'
 
 x-airflow-common:
   &airflow-common
@@ -7,9 +6,10 @@ x-airflow-common:
   environment:
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-    AIRFLOW__CORE__FERNET_KEY: ''
+    AIRFLOW__CORE__FERNET_KEY: 'A5hT7qpMa2g12NlDa2donhKQ9U-xnU8_ce6L1yJMj7I='
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
+    MLFLOW_TRACKING_URI: http://mlflow:5000
   volumes:
     - ./airflow/dags:/opt/airflow/dags
     - ./airflow/logs:/opt/airflow/logs
@@ -18,11 +18,13 @@ x-airflow-common:
     - ./models:/opt/airflow/models
   depends_on:
     - postgres
+    - mlflow
 
 services:
 
   postgres:
     image: postgres:13
+    container_name: postgres
     environment:
       POSTGRES_USER: airflow
       POSTGRES_PASSWORD: airflow
@@ -32,17 +34,19 @@ services:
 
   airflow-init:
     <<: *airflow-common
+    container_name: airflow-init
     command: >
       bash -c "
-        pip install --no-cache-dir joblib pandas scikit-learn &&
+        pip install --no-cache-dir joblib pandas scikit-learn mlflow &&
         airflow db init &&
         airflow users create --username admin --password admin --firstname Vivek --lastname Marri --role Admin --email admin@example.com
       "
 
   airflow-webserver:
     <<: *airflow-common
+    container_name: airflow-webserver
     command: >
-      bash -c "pip install --no-cache-dir joblib pandas scikit-learn && airflow webserver"
+      bash -c "pip install --no-cache-dir joblib pandas scikit-learn mlflow && airflow webserver"
     ports:
       - "8081:8080"
     healthcheck:
@@ -54,8 +58,39 @@ services:
 
   airflow-scheduler:
     <<: *airflow-common
+    container_name: airflow-scheduler
     command: >
-      bash -c "pip install --no-cache-dir joblib pandas scikit-learn && airflow scheduler"
+      bash -c "pip install --no-cache-dir joblib pandas scikit-learn mlflow && airflow scheduler"
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.14.2
+    container_name: mlflow
+    command: >
+      mlflow server
+      --backend-store-uri sqlite:///mlflow.db
+      --default-artifact-root /mlflow/artifacts
+      --host 0.0.0.0
+      --port 5000
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlruns:/mlflow/artifacts
+      - ./mlflow:/mlflow  # for database and config
+
+  fastapi:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: flood_api
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+    volumes:
+      - ./models:/app/models    # only mount models folder
+    command: >
+      bash -c "pip install --no-cache-dir -r requirements.txt && uvicorn app:app --host 0.0.0.0 --port 8000"
 
 volumes:
   postgres_db:
