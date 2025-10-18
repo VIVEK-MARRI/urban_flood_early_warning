@@ -1,0 +1,7 @@
+apache-airflow==2.9.1
+mlflow==3.5.0
+fastapi==0.119.0
+scikit-learn==1.7.2
+cryptography<45
+cffi<2.0.0
+rich<14

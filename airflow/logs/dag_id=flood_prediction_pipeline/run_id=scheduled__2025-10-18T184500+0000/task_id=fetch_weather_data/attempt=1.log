@@ -1,0 +1,19 @@
+[2025-10-18T18:50:01.900+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2025-10-18T18:50:01.919+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: flood_prediction_pipeline.fetch_weather_data scheduled__2025-10-18T18:45:00+00:00 [queued]>
+[2025-10-18T18:50:01.926+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: flood_prediction_pipeline.fetch_weather_data scheduled__2025-10-18T18:45:00+00:00 [queued]>
+[2025-10-18T18:50:01.927+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 2
+[2025-10-18T18:50:01.937+0000] {taskinstance.py:2330} INFO - Executing <Task(PythonOperator): fetch_weather_data> on 2025-10-18 18:45:00+00:00
+[2025-10-18T18:50:01.944+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:61 DeprecationWarning: This process (pid=676) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2025-10-18T18:50:01.943+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'flood_prediction_pipeline', 'fetch_weather_data', 'scheduled__2025-10-18T18:45:00+00:00', '--job-id', '127', '--raw', '--subdir', 'DAGS_FOLDER/flood_prediction_dag.py', '--cfg-path', '/tmp/tmppepg2ott']
+[2025-10-18T18:50:01.945+0000] {standard_task_runner.py:63} INFO - Started process 679 to run task
+[2025-10-18T18:50:01.946+0000] {standard_task_runner.py:91} INFO - Job 127: Subtask fetch_weather_data
+[2025-10-18T18:50:01.985+0000] {task_command.py:426} INFO - Running <TaskInstance: flood_prediction_pipeline.fetch_weather_data scheduled__2025-10-18T18:45:00+00:00 [running]> on host fcca755cbcb6
+[2025-10-18T18:50:02.050+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='flood_prediction_pipeline' AIRFLOW_CTX_TASK_ID='fetch_weather_data' AIRFLOW_CTX_EXECUTION_DATE='2025-10-18T18:45:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='scheduled__2025-10-18T18:45:00+00:00'
+[2025-10-18T18:50:02.051+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2025-10-18T18:50:02.076+0000] {logging_mixin.py:188} INFO - ✅ Weather data fetched: {'temp': 21.492712286919787, 'humidity': 74.72920150518576, 'pressure': 1034.8475003797323, 'wind_speed': 1.3829204906046022, 'rain_1h': 7.820697115676209, 'rain_3h': 55.1639335041378, 'rain_6h': 84.67779544717976, 'rain_24h': 157.12549789980557, 'rain_intensity': 1.2625953975755655, 'temp_delta': -7.629192197327303, 'humidity_delta': -17.068660572808767, 'year': 2025, 'month': 10, 'day': 18, 'hour': 18, 'minute': 50, 'second': 2}
+[2025-10-18T18:50:02.077+0000] {python.py:237} INFO - Done. Returned value was: {'temp': 21.492712286919787, 'humidity': 74.72920150518576, 'pressure': 1034.8475003797323, 'wind_speed': 1.3829204906046022, 'rain_1h': 7.820697115676209, 'rain_3h': 55.1639335041378, 'rain_6h': 84.67779544717976, 'rain_24h': 157.12549789980557, 'rain_intensity': 1.2625953975755655, 'temp_delta': -7.629192197327303, 'humidity_delta': -17.068660572808767, 'year': 2025, 'month': 10, 'day': 18, 'hour': 18, 'minute': 50, 'second': 2}
+[2025-10-18T18:50:02.077+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2025-10-18T18:50:02.093+0000] {taskinstance.py:1206} INFO - Marking task as SUCCESS. dag_id=flood_prediction_pipeline, task_id=fetch_weather_data, run_id=scheduled__2025-10-18T18:45:00+00:00, execution_date=20251018T184500, start_date=20251018T185001, end_date=20251018T185002
+[2025-10-18T18:50:02.119+0000] {local_task_job_runner.py:240} INFO - Task exited with return code 0
+[2025-10-18T18:50:02.134+0000] {taskinstance.py:3498} INFO - 1 downstream tasks scheduled from follow-on schedule check
+[2025-10-18T18:50:02.137+0000] {local_task_job_runner.py:222} INFO - ::endgroup::

@@ -1,1 +1,19 @@
-["temp", "humidity", "pressure", "wind_speed", "rain_1h", "rain_3h", "rain_6h", "rain_24h", "rain_intensity", "temp_delta", "humidity_delta", "hour", "day", "month"]
+[
+    "temp",
+    "humidity",
+    "pressure",
+    "wind_speed",
+    "rain_1h",
+    "rain_3h",
+    "rain_6h",
+    "rain_24h",
+    "rain_intensity",
+    "temp_delta",
+    "humidity_delta",
+    "year",
+    "month",
+    "day",
+    "hour",
+    "minute",
+    "second"
+]
