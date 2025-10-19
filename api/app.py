@@ -7,7 +7,7 @@ import json
 app = FastAPI(title="Urban Flood Early Warning System")
 
 # Load trained model
-model = joblib.load("models/baseline_rf_model.pkl")
+model = joblib.load("models/optimized_rf_model.pkl")
 with open("models/feature_columns.json") as f:
     feature_columns = json.load(f)
 
@@ -20,6 +20,7 @@ def root():
 def predict_flood(data: dict):
     try:
         input_df = pd.DataFrame([data])
+        
 
         # Check for missing columns
         missing_cols = [col for col in feature_columns if col not in input_df.columns]

@@ -1,0 +1,15 @@
+artifact_uri: file:///c:/vivek/prj__/urban_flood_early_warning/notebooks/mlruns/111305323019420416/a23ede0992504a17964cd6b4f0076c78/artifacts
+end_time: 1760851650794
+entry_point_name: ''
+experiment_id: '111305323019420416'
+lifecycle_stage: active
+run_id: a23ede0992504a17964cd6b4f0076c78
+run_name: Baseline_RF_For_Deployment
+run_uuid: a23ede0992504a17964cd6b4f0076c78
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1760851646695
+status: 3
+tags: []
+user_id: vivek

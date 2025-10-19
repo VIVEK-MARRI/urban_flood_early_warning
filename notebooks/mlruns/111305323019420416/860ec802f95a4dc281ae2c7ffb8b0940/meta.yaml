@@ -1,0 +1,15 @@
+artifact_uri: file:///c:/vivek/prj__/urban_flood_early_warning/notebooks/mlruns/111305323019420416/860ec802f95a4dc281ae2c7ffb8b0940/artifacts
+end_time: 1760856146472
+entry_point_name: ''
+experiment_id: '111305323019420416'
+lifecycle_stage: active
+run_id: 860ec802f95a4dc281ae2c7ffb8b0940
+run_name: Optimized_RF_Model
+run_uuid: 860ec802f95a4dc281ae2c7ffb8b0940
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1760856143056
+status: 3
+tags: []
+user_id: vivek

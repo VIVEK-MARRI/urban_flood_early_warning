@@ -16,12 +16,12 @@ x-airflow-common:
     - ./airflow/plugins:/opt/airflow/plugins
     - ./data:/opt/airflow/data
     - ./models:/opt/airflow/models
+    - ./mlruns:/mlflow/artifacts  # shared artifacts for MLflow
   depends_on:
     - postgres
     - mlflow
 
 services:
-
   postgres:
     image: postgres:13
     container_name: postgres
@@ -75,7 +75,7 @@ services:
       - "5000:5000"
     volumes:
       - ./mlruns:/mlflow/artifacts
-      - ./mlflow:/mlflow  # for database and config
+      - ./mlflow:/mlflow
 
   fastapi:
     build:
@@ -88,7 +88,7 @@ services:
     environment:
       MLFLOW_TRACKING_URI: http://mlflow:5000
     volumes:
-      - ./models:/app/models    # only mount models folder
+      - ./models:/app/models
     command: >
       bash -c "pip install --no-cache-dir -r requirements.txt && uvicorn app:app --host 0.0.0.0 --port 8000"
 
