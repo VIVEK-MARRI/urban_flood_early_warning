@@ -67,8 +67,6 @@ def get_live_prediction(weather_data):
         return None
 
 def already_processed(latest_row):
-    # Simplified hash to ignore highly volatile time components (minute/second)
-    # for cleaner logging behavior from Airflow.
     if not os.path.exists(LAST_CALL_FILE):
         return False
     try:
@@ -110,8 +108,10 @@ def check_alert_repeat(current_status):
 def risk_color(prediction):
     return "red" if prediction == 1 else "green"
 
+# NOTE: Removed reset_data_files function as requested
+
 # -----------------------------
-# Load logs and ENFORCE DATA TYPES (FIX)
+# Load logs and ENFORCE DATA TYPES (CRITICAL FIXES)
 # -----------------------------
 df_log = safe_load_csv(PRED_LOG_PATH)
 if not df_log.empty and 'timestamp' in df_log.columns:
@@ -119,7 +119,7 @@ if not df_log.empty and 'timestamp' in df_log.columns:
     df_log = df_log.dropna(subset=['timestamp'])
     df_log = df_log.sort_values('timestamp').drop_duplicates(subset=['timestamp', 'city'], keep='last')
     
-    # <<< CRITICAL FIX: ENSURE LAT/LON AND PROBABILITY ARE NUMERIC >>>
+    # CRITICAL FIX: ENSURE LAT/LON AND PROBABILITY ARE NUMERIC
     try:
         df_log['lat'] = pd.to_numeric(df_log['lat'], errors='coerce')
         df_log['lon'] = pd.to_numeric(df_log['lon'], errors='coerce')
@@ -129,7 +129,6 @@ if not df_log.empty and 'timestamp' in df_log.columns:
     except KeyError:
         st.error("Data integrity issue: Missing critical columns (lat/lon/probability/prediction).")
         df_log = pd.DataFrame()
-    # <<< END CRITICAL FIX >>>
 
 
 df_live = safe_load_csv(LIVE_DATA_PATH)
@@ -138,6 +137,7 @@ latest_weather = df_live.iloc[-1].to_dict() if not df_live.empty else None
 # -----------------------------
 # Fetch live prediction
 # -----------------------------
+latest_explanation = {}
 if latest_weather and not already_processed(latest_weather):
     live_pred = get_live_prediction(latest_weather)
     if live_pred:
@@ -153,11 +153,24 @@ if latest_weather and not already_processed(latest_weather):
             "lat": lat,
             "lon": lon,
             "city": city,
+            "explanation": json.dumps(live_pred.get("explanation", {})) # Store explanation as JSON string
         }
+        latest_explanation = live_pred.get("explanation", {}) # Keep the dict for immediate display
+        
         new_row.update(latest_weather)
         df_log = pd.concat([df_log, pd.DataFrame([new_row])], ignore_index=True)
         df_log.to_csv(PRED_LOG_PATH, index=False)
         save_last_processed(latest_weather)
+
+# If no new prediction was made, try to retrieve the last explanation from log
+elif not df_log.empty and 'explanation' in df_log.columns:
+    try:
+        # Load the explanation from the last log entry
+        last_explanation_str = df_log.iloc[-1].get('explanation', '{}')
+        latest_explanation = json.loads(last_explanation_str)
+    except:
+        latest_explanation = {}
+
 
 # -----------------------------
 # Sidebar controls
@@ -179,7 +192,6 @@ tab1, tab2 = st.tabs(["📈 Dashboard", "ℹ About Project"])
 
 with tab1:
     if not df_log.empty:
-        # Determine which dataframe to use for current status (always latest available log entry)
         latest = df_log.iloc[-1] 
 
         # --- Alert Banner ---
@@ -199,37 +211,10 @@ with tab1:
             )
             check_alert_repeat(False)
 
-        # --- City Status Cards ---
-        st.subheader("🏙 City-wise Flood Risk Status")
-        card_cols = st.columns(len(TELANGANA_CITIES))
-        
-        # Get the latest prediction for each city, if it exists in the *filtered* view
-        latest_city_predictions = df_log.groupby('city').last().reset_index()
-
-        for idx, city in enumerate(TELANGANA_CITIES.keys()):
-            city_data = latest_city_predictions[latest_city_predictions['city'] == city]
-            
-            if not city_data.empty:
-                latest_city = city_data.iloc[0]
-                color = risk_color(latest_city['prediction'])
-                risk_text = 'HIGH RISK' if latest_city['prediction'] == 1 else 'SAFE'
-                prob_text = f"{latest_city['probability']*100:.1f}%"
-            else:
-                color = '#cccccc'
-                risk_text = 'No Data'
-                prob_text = '-'
-                
-            card_cols[idx].markdown(
-                f"<div style='background-color:{'#ff6666' if color=='red' else color}; padding:10px; border-radius:5px; text-align:center;'>"
-                f"<h4>{city}</h4>"
-                f"<b>{risk_text}</b><br>"
-                f"{prob_text}</div>",
-                unsafe_allow_html=True,
-            )
-
+        # --- Dashboard Layout ---
         col1, col2, col3 = st.columns([1, 1, 2])
         
-        # --- Gauge ---
+        # --- Gauge (Col 1) ---
         with col1:
             fig_gauge = go.Figure(
                 go.Indicator(
@@ -249,7 +234,7 @@ with tab1:
             )
             st.plotly_chart(fig_gauge, use_container_width=True)
 
-        # --- Status / Key Features ---
+        # --- Status / Key Features (Col 2 & 3) ---
         with col2:
             color = risk_color(latest["prediction"])
             st.markdown(
@@ -266,10 +251,43 @@ with tab1:
                 feat_df["Color"] = risk_color(latest["prediction"])
                 fig_bar = px.bar(feat_df, x="Feature", y="Value", color="Color", color_discrete_map="identity")
                 st.plotly_chart(fig_bar, use_container_width=True)
-
-
+                
+        st.markdown("---")
+        
+        # --- V2 SHAP EXPLANATION (New Section) ---
+        st.subheader("💡 Prediction Explainability (SHAP)")
+        
+        if latest_explanation:
+            # Convert SHAP dictionary to DataFrame for plotting
+            df_explanation = pd.DataFrame(
+                list(latest_explanation.items()), columns=['Feature', 'SHAP Value']
+            ).sort_values(by='SHAP Value', ascending=False)
+            
+            # Create a column for positive/negative influence
+            df_explanation['Influence'] = np.where(df_explanation['SHAP Value'] > 0, 'Risk Increase', 'Risk Decrease')
+            
+            # Filter for the top 10 most influential features (by magnitude)
+            df_explanation['Abs_SHAP'] = df_explanation['SHAP Value'].abs()
+            df_explanation = df_explanation.nlargest(10, 'Abs_SHAP')
+            
+            fig_explain = px.bar(
+                df_explanation.sort_values(by='SHAP Value', ascending=True),
+                x='SHAP Value',
+                y='Feature',
+                orientation='h',
+                color='Influence',
+                color_discrete_map={'Risk Increase': 'red', 'Risk Decrease': 'blue'},
+                title='Top 10 Factors Driving Flood Probability Score'
+            )
+            fig_explain.update_layout(yaxis={'autorange': "reversed"})
+            st.plotly_chart(fig_explain, use_container_width=True)
+        else:
+            st.info("Waiting for the first prediction with SHAP explanation.")
+        
+        st.markdown("---")
+        
         # --- Map (FIXED FOR CLEAN DISPLAY) ---
-        st.subheader("🗺 Telangana Flood Map")
+        st.subheader("🗺 Telangana Flood Map") 
         
         # 1. Create a Base Map DataFrame with all city locations (The "clean map")
         df_base_map = pd.DataFrame([
@@ -278,7 +296,6 @@ with tab1:
         ])
         
         # 2. Overlay the latest prediction data only
-        # Use df_log (the unfiltered history) to get the latest status
         df_latest_status = df_log.groupby('city').last().reset_index()
         
         if not df_latest_status.empty:
@@ -288,9 +305,14 @@ with tab1:
             # Merge the latest status onto the base map
             df_map = df_base_map[['city', 'lat', 'lon']].merge(
                 df_latest_status[['city', 'lat', 'lon', 'risk_status', 'probability', 'size']],
-                on=['city', 'lat', 'lon'],
+                on=['city'],
+                suffixes=('_base', '_pred'),
                 how='left'
             ).fillna({'risk_status': 'No Data', 'probability': 0, 'size': 5})
+            
+            # Use predicted lat/lon if available, otherwise use base lat/lon
+            df_map['lat'] = df_map['lat_pred'].fillna(df_map['lat_base'])
+            df_map['lon'] = df_map['lon_pred'].fillna(df_map['lon_base'])
             
             # Map colors for the plot
             color_map = {"HIGH RISK": "red", "Safe": "green", "No Data": "gray"}
@@ -307,11 +329,22 @@ with tab1:
                 mapbox_style="open-street-map",
                 color_discrete_map=color_map,
             )
-            # Make the map markers larger
+            # Make the map markers visible
             fig_map.update_traces(marker=dict(size=df_map["size"] * 1.5, opacity=0.9), selector=dict(mode='markers'))
             st.plotly_chart(fig_map, use_container_width=True)
         else:
-             st.info("Map not available yet. Waiting for initial predictions to populate logs.")
+            # Display a basic map if no prediction data exists
+            fig_map_base = px.scatter_mapbox(
+                df_base_map,
+                lat="lat",
+                lon="lon",
+                hover_name="city",
+                zoom=6,
+                center={"lat": 17.8, "lon": 79.5},
+                mapbox_style="open-street-map"
+            )
+            st.plotly_chart(fig_map_base, use_container_width=True)
+
 
         # --- Probability Trend ---
         st.subheader("📈 Probability Trend")
@@ -340,31 +373,28 @@ with tab2:
 
     ---
     ### 🔍 Core Capabilities
-    - 🌦 **Live Weather Integration:** Real-time meteorological data via APIs or IoT sensors  
-    - 🤖 **ML-Powered Predictions:** Optimized Random Forest model served via FastAPI  
-    - 🪶 **Automated Orchestration:** Airflow DAGs for continuous ingestion & prediction  
-    - 📊 **Interactive Monitoring Dashboard:** Streamlit-based visualization & analytics  
-    - 🗺 **Geospatial Visualization:** Live map tracking of flood-prone areas (Telangana demo)  
-    - 🧠 **MLOps Integration:** Experiment tracking & model versioning with MLflow  
-    - 🚨 **Smart Alert System:** Adaptive visual and audio alerts  
-    - 🕒 **Historical Insights:** Time-series probability tracking for long-term risk assessment  
+    - 🌦 **Live Weather Integration:** Real-time meteorological data via APIs or IoT sensors 
+    - 🤖 **ML-Powered Predictions:** Optimized Random Forest model served via FastAPI 
+    - 🪶 **Automated Orchestration:** Airflow DAGs for continuous ingestion & prediction
+    - 📊 **Interactive Monitoring Dashboard:** Streamlit-based visualization & analytics 
+    - 🗺 **Geospatial Visualization:** Live map tracking of flood-prone areas (Telangana demo) 
+    - 🧠 **MLOps Integration:** Experiment tracking & model versioning with MLflow 
+    - 🚨 **Smart Alert System:** Adaptive visual and audio alerts 
+    - 🕒 **Historical Insights:** Time-series probability tracking for long-term risk assessment 
 
     ---
     ### 🧩 Tech Stack
-    Python • Streamlit • FastAPI • Apache Airflow • MLflow • Docker • Pandas • Scikit-learn  
+    Python • Streamlit • FastAPI • Apache Airflow • MLflow • Docker • Pandas • Scikit-learn 
 
     ---
     ### 🎯 Objective
     Build a scalable, automated, and data-driven flood early warning system to assist 
-    **urban authorities, disaster management teams, and citizens** in making timely, informed decisions.  
+    **urban authorities, disaster management teams, and citizens** in making timely, informed decisions. 
 
     ---
     ### 👨‍💻 Developed By
-    **Vivek Marri**  
-    *(End-to-end MLOps-driven implementation for real-world resilience analytics)*  
-
-    Connect with me:  
-    - 🔗 [LinkedIn](https://www.linkedin.com/in/vivek-marri-49419a274/)  
-    - 💻 [GitHub](https://github.com/VIVEK-MARRI)  
-    - 📄 [Portfolio](https://vivekmarri.com)  
+    **Vivek Marri** *(End-to-end MLOps-driven implementation for real-world resilience analytics)* Connect with me: 
+    - 🔗 [LinkedIn](https://www.linkedin.com/in/vivek-marri-49419a274/) 
+    - 💻 [GitHub](https://github.com/VIVEK-MARRI) 
+    - 📄 [Portfolio](https://vivekmarri.com) 
     """, unsafe_allow_html=True)
