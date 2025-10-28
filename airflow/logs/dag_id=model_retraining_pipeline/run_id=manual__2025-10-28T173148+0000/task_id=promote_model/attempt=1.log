@@ -1,0 +1,19 @@
+[2025-10-28T17:31:53.682+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2025-10-28T17:31:53.704+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: model_retraining_pipeline.promote_model manual__2025-10-28T17:31:48+00:00 [queued]>
+[2025-10-28T17:31:53.710+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: model_retraining_pipeline.promote_model manual__2025-10-28T17:31:48+00:00 [queued]>
+[2025-10-28T17:31:53.711+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 2
+[2025-10-28T17:31:53.722+0000] {taskinstance.py:2330} INFO - Executing <Task(PythonOperator): promote_model> on 2025-10-28 17:31:48+00:00
+[2025-10-28T17:31:53.731+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:61 DeprecationWarning: This process (pid=8149) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2025-10-28T17:31:53.730+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'model_retraining_pipeline', 'promote_model', 'manual__2025-10-28T17:31:48+00:00', '--job-id', '235', '--raw', '--subdir', 'DAGS_FOLDER/retraining_pipeline.py', '--cfg-path', '/tmp/tmpb827enlc']
+[2025-10-28T17:31:53.732+0000] {standard_task_runner.py:63} INFO - Started process 8163 to run task
+[2025-10-28T17:31:53.733+0000] {standard_task_runner.py:91} INFO - Job 235: Subtask promote_model
+[2025-10-28T17:31:53.776+0000] {task_command.py:426} INFO - Running <TaskInstance: model_retraining_pipeline.promote_model manual__2025-10-28T17:31:48+00:00 [running]> on host 42dce8a10814
+[2025-10-28T17:31:53.848+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='model_retraining_pipeline' AIRFLOW_CTX_TASK_ID='promote_model' AIRFLOW_CTX_EXECUTION_DATE='2025-10-28T17:31:48+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2025-10-28T17:31:48+00:00'
+[2025-10-28T17:31:53.850+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2025-10-28T17:31:53.869+0000] {logging_mixin.py:188} INFO - No new model metrics or training was skipped. Skipping promotion.
+[2025-10-28T17:31:53.869+0000] {python.py:237} INFO - Done. Returned value was: promotion_skipped
+[2025-10-28T17:31:53.870+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2025-10-28T17:31:53.889+0000] {taskinstance.py:1206} INFO - Marking task as SUCCESS. dag_id=model_retraining_pipeline, task_id=promote_model, run_id=manual__2025-10-28T17:31:48+00:00, execution_date=20251028T173148, start_date=20251028T173153, end_date=20251028T173153
+[2025-10-28T17:31:53.908+0000] {local_task_job_runner.py:240} INFO - Task exited with return code 0
+[2025-10-28T17:31:53.927+0000] {taskinstance.py:3498} INFO - 1 downstream tasks scheduled from follow-on schedule check
+[2025-10-28T17:31:53.931+0000] {local_task_job_runner.py:222} INFO - ::endgroup::
