@@ -3,6 +3,7 @@ version: '3.9'
 x-airflow-common:
   &airflow-common
   image: apache/airflow:2.9.1
+  # ... (Keep existing environment variables) ...
   environment:
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
@@ -10,13 +11,16 @@ x-airflow-common:
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
     MLFLOW_TRACKING_URI: http://mlflow:5000
+    # Add new environment variable for Slack Alerting (You'll define this later in Airflow UI)
+    SLACK_WEBHOOK_URL: '{{ var.value.slack_flood_alert }}' 
   volumes:
     - ./airflow/dags:/opt/airflow/dags
     - ./airflow/logs:/opt/airflow/logs
     - ./airflow/plugins:/opt/airflow/plugins
     - ./data:/opt/airflow/data
     - ./models:/opt/airflow/models
-    - ./mlruns:/mlflow/artifacts  # shared artifacts for MLflow
+    - ./mlruns:/mlflow/artifacts
+    - ./mlflow:/mlflow
   depends_on:
     - postgres
     - mlflow
@@ -37,7 +41,7 @@ services:
     container_name: airflow-init
     command: >
       bash -c "
-        pip install --no-cache-dir joblib pandas scikit-learn mlflow &&
+        pip install --no-cache-dir joblib pandas scikit-learn mlflow 'apache-airflow-providers-slack==8.8.0' prometheus_client &&
         airflow db init &&
         airflow users create --username admin --password admin --firstname Vivek --lastname Marri --role Admin --email admin@example.com
       "
@@ -46,7 +50,7 @@ services:
     <<: *airflow-common
     container_name: airflow-webserver
     command: >
-      bash -c "pip install --no-cache-dir joblib pandas scikit-learn mlflow && airflow webserver"
+      bash -c "pip install --no-cache-dir joblib pandas scikit-learn mlflow 'apache-airflow-providers-slack==8.8.0' prometheus_client && airflow webserver"
     ports:
       - "8081:8080"
     healthcheck:
@@ -60,7 +64,7 @@ services:
     <<: *airflow-common
     container_name: airflow-scheduler
     command: >
-      bash -c "pip install --no-cache-dir joblib pandas scikit-learn mlflow && airflow scheduler"
+      bash -c "pip install --no-cache-dir joblib pandas scikit-learn mlflow 'apache-airflow-providers-slack==8.8.0' prometheus_client && airflow scheduler"
 
   mlflow:
     image: ghcr.io/mlflow/mlflow:v2.14.2
@@ -87,10 +91,49 @@ services:
       - "8000:8000"
     environment:
       MLFLOW_TRACKING_URI: http://mlflow:5000
+      # Expose service endpoint for Prometheus to scrape
+      PROMETHEUS_ENDPOINT: /metrics
     volumes:
       - ./models:/app/models
     command: >
-      bash -c "pip install --no-cache-dir -r requirements.txt && uvicorn app:app --host 0.0.0.0 --port 8000"
+      bash -c "pip install --no-cache-dir -r requirements.txt prometheus_client && uvicorn app:app --host 0.0.0.0 --port 8000"
+    # Ensure FastAPI is on the network so Prometheus can find it
+    networks:
+      default:
+        aliases:
+          - flood_api_monitor
 
+  # ------------------------------------
+  # NEW SERVICES FOR MONITORING
+  # ------------------------------------
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      # Configure Prometheus using a local file
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro 
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    depends_on:
+      - fastapi
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+      
 volumes:
   postgres_db:
+  prometheus_data:
+  grafana_data:

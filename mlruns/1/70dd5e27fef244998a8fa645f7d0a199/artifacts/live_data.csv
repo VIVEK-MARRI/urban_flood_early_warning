@@ -1,0 +1,2 @@
+temp,humidity,pressure,wind_speed,rain_1h,rain_3h,rain_6h,rain_24h,rain_intensity,temp_delta,humidity_delta,hour,minute,second,day,month,year
+34.63,61.26,1046.22,4.09,22.68,59.49,93.22,196.97,2.13,3.1000000000000014,-17.4,5,5,1,20,10,2025
