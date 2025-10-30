@@ -2,17 +2,26 @@ version: '3.9'
 
 x-airflow-common:
   &airflow-common
-  image: apache/airflow:2.9.1
-  # ... (Keep existing environment variables) ...
+  # NEW: Build the custom Dockerfile with pre-installed dependencies
+  build:
+    context: .
+    dockerfile: Dockerfile.airflow 
+  
   environment:
+    # AIRFLOW CORE
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     AIRFLOW__CORE__FERNET_KEY: 'A5hT7qpMa2g12NlDa2donhKQ9U-xnU8_ce6L1yJMj7I='
-    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
+    # ML/MONITORING
     MLFLOW_TRACKING_URI: http://mlflow:5000
-    # Add new environment variable for Slack Alerting (You'll define this later in Airflow UI)
-    SLACK_WEBHOOK_URL: '{{ var.value.slack_flood_alert }}' 
+    SLACK_WEBHOOK_URL: '{{ var.value.slack_flood_alert }}'
+    # DB VARIABLES (Used by Airflow DAGs and Streamlit)
+    DB_HOST: postgres
+    DB_NAME: airflow
+    DB_USER: airflow
+    DB_PASSWORD: airflow
   volumes:
     - ./airflow/dags:/opt/airflow/dags
     - ./airflow/logs:/opt/airflow/logs
@@ -24,6 +33,7 @@ x-airflow-common:
   depends_on:
     - postgres
     - mlflow
+    - fastapi 
 
 services:
   postgres:
@@ -35,13 +45,19 @@ services:
       POSTGRES_DB: airflow
     volumes:
       - postgres_db:/var/lib/postgresql/data
+    ports:
+      - "5432:5432" 
 
+  # --- AIRFLOW SERVICES (Use custom image) ---
   airflow-init:
     <<: *airflow-common
     container_name: airflow-init
+    depends_on:
+      - postgres
+      - mlflow
     command: >
       bash -c "
-        pip install --no-cache-dir joblib pandas scikit-learn mlflow 'apache-airflow-providers-slack==8.8.0' prometheus_client &&
+        # Dependencies are pre-installed in the image
         airflow db init &&
         airflow users create --username admin --password admin --firstname Vivek --lastname Marri --role Admin --email admin@example.com
       "
@@ -49,8 +65,7 @@ services:
   airflow-webserver:
     <<: *airflow-common
     container_name: airflow-webserver
-    command: >
-      bash -c "pip install --no-cache-dir joblib pandas scikit-learn mlflow 'apache-airflow-providers-slack==8.8.0' prometheus_client && airflow webserver"
+    command: airflow webserver # Simple startup command
     ports:
       - "8081:8080"
     healthcheck:
@@ -63,8 +78,12 @@ services:
   airflow-scheduler:
     <<: *airflow-common
     container_name: airflow-scheduler
-    command: >
-      bash -c "pip install --no-cache-dir joblib pandas scikit-learn mlflow 'apache-airflow-providers-slack==8.8.0' prometheus_client && airflow scheduler"
+    depends_on:
+      - postgres
+      - mlflow
+      - fastapi
+    command: airflow scheduler # Simple startup command
+  # --- END AIRFLOW SERVICES ---
 
   mlflow:
     image: ghcr.io/mlflow/mlflow:v2.14.2
@@ -81,6 +100,7 @@ services:
       - ./mlruns:/mlflow/artifacts
       - ./mlflow:/mlflow
 
+  # --- FASTAPI SERVICE ---
   fastapi:
     build:
       context: ./api
@@ -91,27 +111,42 @@ services:
       - "8000:8000"
     environment:
       MLFLOW_TRACKING_URI: http://mlflow:5000
-      # Expose service endpoint for Prometheus to scrape
       PROMETHEUS_ENDPOINT: /metrics
     volumes:
       - ./models:/app/models
-    command: >
-      bash -c "pip install --no-cache-dir -r requirements.txt prometheus_client && uvicorn app:app --host 0.0.0.0 --port 8000"
-    # Ensure FastAPI is on the network so Prometheus can find it
+    command: ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
     networks:
       default:
         aliases:
           - flood_api_monitor
 
-  # ------------------------------------
-  # NEW SERVICES FOR MONITORING
-  # ------------------------------------
+  # --- STREAMLIT SERVICE (Database Connector) ---
+  streamlit:
+    build:
+      context: ./streamlit_app
+      dockerfile: Dockerfile
+    container_name: flood_dashboard
+    restart: always
+    ports:
+      - "8501:8501" 
+    environment: 
+      DB_HOST: postgres
+      DB_NAME: airflow
+      DB_USER: airflow
+      DB_PASSWORD: airflow
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+    depends_on:
+      - fastapi
+      - postgres 
+      
+  # --- MONITORING SERVICES ---
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
     volumes:
-      # Configure Prometheus using a local file
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro 
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'

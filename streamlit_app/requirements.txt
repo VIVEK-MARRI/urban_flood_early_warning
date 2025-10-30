@@ -1,4 +1,7 @@
-streamlit
-pandas
-plotly
-requests
+streamlit>=1.36.0
+pandas>=2.2.2
+plotly>=5.22.0
+requests>=2.32.3
+numpy>=1.26.4
+psycopg2-binary>=2.9.9  # NEW: For connecting to PostgreSQL
+streamlit-autorefresh==1.0.1

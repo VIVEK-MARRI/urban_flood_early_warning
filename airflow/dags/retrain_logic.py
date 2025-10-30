@@ -1,6 +1,7 @@
 # airflow/dags/retrain_logic.py
 
 import os
+import json
 import pandas as pd
 import numpy as np
 import joblib
@@ -8,95 +9,94 @@ import mlflow
 import mlflow.sklearn
 from datetime import datetime
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
+import xgboost as xgb
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.metrics import f1_score, recall_score, brier_score_loss
+import mlflow.tracking
 
 # --- Configuration ---
 RAW_LOG_PATH = "data/prediction_log.csv"
-MODEL_NAME = "UrbanFloodClassifier" 
-TARGET_COLUMN = 'flood_risk'
-METRICS_THRESHOLD = 0.95 # Minimum F1 score required for promotion
+MODEL_NAME = "UrbanFloodClassifier"
+TARGET_COLUMN = "flood_risk"
+METRICS_THRESHOLD = 0.95  # Minimum F1 score required for promotion
+TARGET_MODEL_FILE = "/opt/airflow/models/optimized_rf_v2.pkl"
 
-# --- Feature Engineering and Labeling Logic ---
+# -----------------------------
+# Feature Engineering & Labeling
+# -----------------------------
 def create_flood_label(df):
     """Recreates the flood risk proxy label used in initial training."""
-    # Ensure columns exist; df should contain 'rain_24h', 'humidity', 'pressure' from logs
-    df['rain_24h_prev'] = df['rain_24h'].shift(1)
-    df['humidity_prev'] = df['humidity'].shift(1)
-    df['pressure_prev'] = df['pressure'].shift(1)
+    df["rain_24h_prev"] = df["rain_24h"].shift(1)
+    df["humidity_prev"] = df["humidity"].shift(1)
+    df["pressure_prev"] = df["pressure"].shift(1)
 
-    # Use a set of conditions that define a high-risk event based on historical features
     label = (
-        (df['rain_24h_prev'] >= 1.8) &  # Example threshold: substantial 24h rain accumulation
-        (df['humidity_prev'] >= 75.0) & # Example threshold: high humidity
-        (df['pressure_prev'] <= 1012.0) # Example threshold: low pressure
+        (df["rain_24h_prev"] >= 1.8)
+        & (df["humidity_prev"] >= 75.0)
+        & (df["pressure_prev"] <= 1012.0)
     ).astype(int)
-    
-    # Clean up proxy columns used for lag calculation
-    df.drop(columns=['rain_24h_prev', 'humidity_prev', 'pressure_prev'], inplace=True, errors='ignore')
+
+    df.drop(columns=["rain_24h_prev", "humidity_prev", "pressure_prev"], inplace=True, errors="ignore")
     return label
+
 
 def preprocess_and_split(df):
     """Prepares features, derives labels, and splits data for training/validation."""
-    df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce')
-    df = df.dropna(subset=['timestamp']).sort_values('timestamp').reset_index(drop=True)
+    df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
+    df = df.dropna(subset=["timestamp"]).sort_values("timestamp").reset_index(drop=True)
 
-    # Recalculate Flood Risk Label based on the latest log data
-    df[TARGET_COLUMN] = create_flood_label(df) 
-    
-    # Define the final features matching the original model input
+    df[TARGET_COLUMN] = create_flood_label(df)
+
     feature_cols = [
-        "temp", "humidity", "pressure", "wind_speed", "rain_1h", "rain_3h", "rain_6h", 
-        "rain_24h", "rain_intensity", "temp_delta", "humidity_delta", 
+        "temp", "humidity", "pressure", "wind_speed", "rain_1h", "rain_3h",
+        "rain_6h", "rain_24h", "rain_intensity", "temp_delta", "humidity_delta",
         "hour", "day", "month", "year"
     ]
-    
+
     X = df[feature_cols].fillna(0)
     y = df[TARGET_COLUMN]
-    
-    # Drop rows that don't have enough history for lag features (first few rows)
     Xy = pd.concat([X, y], axis=1).dropna()
 
     if Xy.empty or len(Xy) < 50:
-         raise ValueError(f"Insufficient valid data ({len(Xy)} rows) for training.")
+        raise ValueError(f"Insufficient valid data ({len(Xy)} rows) for training.")
 
-    # Time-based split: latest 20% for validation (avoids data leakage)
     split_idx = int(len(Xy) * 0.8)
     X_train, X_val = Xy.iloc[:split_idx][feature_cols], Xy.iloc[split_idx:][feature_cols]
     y_train, y_val = Xy.iloc[:split_idx][TARGET_COLUMN], Xy.iloc[split_idx:][TARGET_COLUMN]
-    
+
     return X_train, X_val, y_train, y_val
 
-# ------------------------------------------------------------------------------------------------
 
+# -----------------------------
+# Training & Logging
+# -----------------------------
 def run_retraining_pipeline(run_name):
-    """
-    Orchestrates the training, logs metrics to MLflow, and prepares the model for promotion.
-    """
-    mlflow.set_experiment("Flood_Risk_Retrain") # Separate experiment for governance
-    
+    """Orchestrates the training, logs metrics to MLflow, and registers the model."""
+    mlflow.set_experiment("Flood_Risk_Retrain")
+
     try:
-        df = pd.read_csv(RAW_LOG_PATH)
+        df = pd.read_csv(os.path.join("/opt/airflow", RAW_LOG_PATH))
         X_train, X_val, y_train, y_val = preprocess_and_split(df)
-        
     except ValueError as e:
         print(f"Skipping training due to: {e}")
-        return {"f1": -2.0, "recall": -2.0, "run_id": "skipped"} # Use -2.0 to denote skip
+        return {"f1": -2.0, "recall": -2.0, "run_id": "skipped"}
 
     with mlflow.start_run(run_name=run_name) as run:
-        print("Starting training run...")
-        
-        # --- Model Definition and Training (Keep original hyperparams) ---
-        rf = RandomForestClassifier(
-            n_estimators=100, max_depth=10, min_samples_leaf=2,
-            min_samples_split=5, random_state=42, class_weight="balanced"
+        print("Starting XGBoost training run...")
+
+        # --- MODEL DEFINITION: XGBoost ---
+        xgb_model = xgb.XGBClassifier(
+            n_estimators=100,
+            max_depth=6,
+            learning_rate=0.1,
+            use_label_encoder=False,
+            eval_metric="logloss",
+            random_state=42
         )
-        
-        # Use Calibrated Classifier for robust probabilities
-        model = CalibratedClassifierCV(rf, cv=3, method='isotonic')
+
+        model = CalibratedClassifierCV(xgb_model, cv=3, method="isotonic")
         model.fit(X_train, y_train)
-        
+
         # --- Validation ---
         y_pred = model.predict(X_val)
         y_proba = model.predict_proba(X_val)[:, 1]
@@ -104,76 +104,86 @@ def run_retraining_pipeline(run_name):
         f1 = f1_score(y_val, y_pred, zero_division=0)
         recall = recall_score(y_val, y_pred, zero_division=0)
         brier = brier_score_loss(y_val, y_proba)
-        
+
         # --- MLflow Logging ---
-        mlflow.log_params({"training_size": len(X_train), "validation_size": len(X_val)})
         mlflow.log_metric("validation_f1_score", f1)
         mlflow.log_metric("validation_recall_score", recall)
         mlflow.log_metric("validation_brier_loss", brier)
-        
-        # Log the model artifact and register it for promotion
+
+        with open(os.path.join("/opt/airflow", "models/feature_columns.json"), "w") as f:
+            json.dump(X_train.columns.tolist(), f)
+
         mlflow.sklearn.log_model(
             sk_model=model,
             artifact_path="model",
             registered_model_name=MODEL_NAME
         )
-        
-        # Push metrics to XCom for the next Airflow task (promotion)
+
         metrics = {"f1": f1, "recall": recall, "run_id": run.info.run_id}
         print(f"Training Complete. Metrics: {metrics}")
         return metrics
 
-# ------------------------------------------------------------------------------------------------
 
+# -----------------------------
+# Model Promotion Logic
+# -----------------------------
 def promote_model_callable(ti):
     """
-    Compares the newly trained model against the current production model
-    and promotes it if performance metrics meet the threshold.
+    Promotes the new model if metrics meet the threshold AND deploys
+    the model artifact to the shared volume for live pipeline use.
     """
-    new_model_metrics = ti.xcom_pull(task_ids='train_and_validate', key='return_value')
+    new_model_metrics = ti.xcom_pull(task_ids="train_and_validate", key="return_value")
     if not new_model_metrics or new_model_metrics.get("f1", -2.0) == -2.0:
         print("No new model metrics or training was skipped. Skipping promotion.")
-        return 'promotion_skipped'
+        return "promotion_skipped"
 
-    new_f1 = new_model_metrics['f1']
-    new_run_id = new_model_metrics['run_id']
-    
+    new_f1 = new_model_metrics["f1"]
+    new_run_id = new_model_metrics["run_id"]
+
     client = mlflow.tracking.MlflowClient()
 
-    # 1. Get the current Production Model metrics
+    # Get current Production model metrics
     try:
-        source_model = client.get_latest_versions(MODEL_NAME, stages=['Production'])[0]
+        source_model = client.get_latest_versions(MODEL_NAME, stages=["Production"])[0]
         prod_model_run = client.get_run(source_model.run_id)
-        prod_f1 = prod_model_run.data.metrics['validation_f1_score']
+        prod_f1 = prod_model_run.data.metrics["validation_f1_score"]
         print(f"Current Production F1: {prod_f1:.4f}")
     except (IndexError, mlflow.exceptions.RestException):
-        # Handle case where no Production model exists (first run)
         prod_f1 = -1.0
         print("No existing Production model found. New model will be promoted.")
 
     print(f"New Model F1: {new_f1:.4f}. Minimum Threshold: {METRICS_THRESHOLD:.4f}")
 
-    # 2. Promotion Logic
+    # Promotion Decision
     if new_f1 > prod_f1 and new_f1 >= METRICS_THRESHOLD:
-        
-        # Find the version that corresponds to the new run ID
-        for version in client.get_latest_versions(MODEL_NAME):
-            if version.run_id == new_run_id:
-                new_version = version.version
-                break
-        else:
-             raise Exception(f"Could not find registered version for run ID {new_run_id}")
+        versions = client.search_model_versions(f"run_id='{new_run_id}'")
+        if not versions:
+            raise Exception(f"Could not find registered version for run ID {new_run_id}")
 
-        # Transition the new model version to Production
+        new_version = versions[0].version
+
+        # Promote new model
         client.transition_model_version_stage(
             name=MODEL_NAME,
             version=new_version,
             stage="Production",
-            archive_existing_versions=True # Archive old production model
+            archive_existing_versions=True
         )
-        print(f"✅ Promoted Model Version {new_version} to Production (F1: {new_f1:.4f})")
-        return 'deployment_successful'
-    
+
+        # Deploy artifact locally for API/DAG access
+        model_uri = f"models:/{MODEL_NAME}/{new_version}"
+        local_model = mlflow.sklearn.load_model(model_uri)
+
+        os.makedirs(os.path.dirname(TARGET_MODEL_FILE), exist_ok=True)
+        joblib.dump(local_model, TARGET_MODEL_FILE)
+
+        print(f"✅ Promoted Model Version {new_version} (XGBoost) to Production (F1: {new_f1:.4f})")
+        print(f"✅ Deployed model artifact to {TARGET_MODEL_FILE} for immediate API/DAG use.")
+        return "deployment_successful"
+
     else:
-        print(f"New model (F1: {new_f1:.4f}) did not beat Production model (F1: {prod_f1:.4f}) or meet the minimum threshold.")
-        return 'promotion_skipped'
+        print(
+            f"New model (F1: {new_f1:.4f}) did not beat Production model (F1: {prod_f1:.4f}) "
+            f"or meet the minimum threshold. Keeping old model."
+        )
+        return "promotion_skipped"
