@@ -1,0 +1,87 @@
+[2025-10-30T14:08:28.421+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2025-10-30T14:08:28.450+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: model_retraining_pipeline.train_and_validate scheduled__2025-10-20T00:00:00+00:00 [queued]>
+[2025-10-30T14:08:28.459+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: model_retraining_pipeline.train_and_validate scheduled__2025-10-20T00:00:00+00:00 [queued]>
+[2025-10-30T14:08:28.460+0000] {taskinstance.py:2306} INFO - Starting attempt 2 of 2
+[2025-10-30T14:08:28.473+0000] {taskinstance.py:2330} INFO - Executing <Task(PythonOperator): train_and_validate> on 2025-10-20 00:00:00+00:00
+[2025-10-30T14:08:28.485+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:61 DeprecationWarning: This process (pid=169) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2025-10-30T14:08:28.484+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'model_retraining_pipeline', 'train_and_validate', 'scheduled__2025-10-20T00:00:00+00:00', '--job-id', '13', '--raw', '--subdir', 'DAGS_FOLDER/retraining_pipeline.py', '--cfg-path', '/tmp/tmpm698d665']
+[2025-10-30T14:08:28.487+0000] {standard_task_runner.py:63} INFO - Started process 219 to run task
+[2025-10-30T14:08:28.487+0000] {standard_task_runner.py:91} INFO - Job 13: Subtask train_and_validate
+[2025-10-30T14:08:28.541+0000] {task_command.py:426} INFO - Running <TaskInstance: model_retraining_pipeline.train_and_validate scheduled__2025-10-20T00:00:00+00:00 [running]> on host 31ca9a0c8d51
+[2025-10-30T14:08:28.630+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='model_retraining_pipeline' AIRFLOW_CTX_TASK_ID='train_and_validate' AIRFLOW_CTX_EXECUTION_DATE='2025-10-20T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='2' AIRFLOW_CTX_DAG_RUN_ID='scheduled__2025-10-20T00:00:00+00:00'
+[2025-10-30T14:08:28.632+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2025-10-30T14:08:28.860+0000] {logging_mixin.py:188} INFO - Starting XGBoost training run...
+[2025-10-30T14:08:29.264+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/xgboost/training.py:199 UserWarning: [14:08:29] WARNING: /workspace/src/learner.cc:790:
+Parameters: { "use_label_encoder" } are not used.
+[2025-10-30T14:08:34.648+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/xgboost/training.py:199 UserWarning: [14:08:34] WARNING: /workspace/src/learner.cc:790:
+Parameters: { "use_label_encoder" } are not used.
+[2025-10-30T14:08:36.245+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/xgboost/training.py:199 UserWarning: [14:08:36] WARNING: /workspace/src/learner.cc:790:
+Parameters: { "use_label_encoder" } are not used.
+[2025-10-30T14:08:37.100+0000] {logging_mixin.py:188} WARNING - 2025/10/30 14:08:37 WARNING mlflow.models.model: `artifact_path` is deprecated. Please use `name` instead.
+[2025-10-30T14:08:37.184+0000] {logging_mixin.py:188} INFO - 🏃 View run weekly_retrain_2025-10-20 at: http://mlflow:5000/#/experiments/2/runs/2eff0ceddcdd415c92088cf8675096e8
+[2025-10-30T14:08:37.185+0000] {logging_mixin.py:188} INFO - 🧪 View experiment at: http://mlflow:5000/#/experiments/2
+[2025-10-30T14:08:37.214+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2025-10-30T14:08:37.215+0000] {taskinstance.py:2905} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 465, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 432, in _execute_callable
+    return execute_callable(context=context, **execute_callable_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 400, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 235, in execute
+    return_value = self.execute_callable()
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 252, in execute_callable
+    return self.python_callable(*self.op_args, **self.op_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/retrain_logic.py", line 116, in run_retraining_pipeline
+    mlflow.sklearn.log_model(
+  File "/home/airflow/.local/lib/python3.12/site-packages/mlflow/sklearn/__init__.py", line 426, in log_model
+    return Model.log(
+           ^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/mlflow/models/model.py", line 1170, in log
+    model = _create_logged_model(
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/mlflow/tracking/fluent.py", line 2323, in _create_logged_model
+    return MlflowClient()._create_logged_model(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/mlflow/tracking/client.py", line 5492, in _create_logged_model
+    return self._tracking_client.create_logged_model(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/mlflow/telemetry/track.py", line 30, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/mlflow/tracking/_tracking_service/client.py", line 870, in create_logged_model
+    return self.store.create_logged_model(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/mlflow/store/tracking/rest_store.py", line 894, in create_logged_model
+    response_proto = self._call_endpoint(CreateLoggedModel, req_body)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/mlflow/store/tracking/rest_store.py", line 201, in _call_endpoint
+    return call_endpoint(
+           ^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/mlflow/utils/rest_utils.py", line 592, in call_endpoint
+    response = verify_rest_response(response, endpoint)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/mlflow/utils/rest_utils.py", line 317, in verify_rest_response
+    raise MlflowException(
+mlflow.exceptions.MlflowException: API request to endpoint /api/2.0/mlflow/logged-models failed with error code 404 != 200. Response body: '<!doctype html>
+<html lang=en>
+<title>404 Not Found</title>
+<h1>Not Found</h1>
+<p>The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.</p>
+'
+[2025-10-30T14:08:37.231+0000] {taskinstance.py:1206} INFO - Marking task as FAILED. dag_id=model_retraining_pipeline, task_id=train_and_validate, run_id=scheduled__2025-10-20T00:00:00+00:00, execution_date=20251020T000000, start_date=20251030T140828, end_date=20251030T140837
+[2025-10-30T14:08:37.246+0000] {standard_task_runner.py:110} ERROR - Failed to execute job 13 for task train_and_validate (API request to endpoint /api/2.0/mlflow/logged-models failed with error code 404 != 200. Response body: '<!doctype html>
+<html lang=en>
+<title>404 Not Found</title>
+<h1>Not Found</h1>
+<p>The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.</p>
+'; 219)
+[2025-10-30T14:08:37.275+0000] {local_task_job_runner.py:240} INFO - Task exited with return code 1
+[2025-10-30T14:08:37.291+0000] {taskinstance.py:3498} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2025-10-30T14:08:37.296+0000] {local_task_job_runner.py:222} INFO - ::endgroup::

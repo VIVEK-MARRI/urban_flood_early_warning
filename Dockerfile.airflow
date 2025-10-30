@@ -1,0 +1,27 @@
+# Dockerfile.airflow
+
+FROM apache/airflow:2.9.1
+
+# 1. Install core system dependencies (AS ROOT)
+# We must switch to root for apt-get, but we don't need a USER line here because the 
+# base image defaults to root for the RUN instruction (but switches back to airflow for CMD/ENTRYPOINT).
+# We explicitly ensure apt-get runs as root.
+USER root 
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        libpq-dev \
+        git \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# 2. Install ALL Python dependencies (AS AIRFLOW USER)
+# We MUST switch to the AIRFLOW_UID user, which is what the Airflow processes run as.
+# The base image has an environmental variable defining the UID.
+# We will use the 'airflow' user directly, as it's the standard name and more readable.
+USER airflow
+
+RUN pip install --no-cache-dir \
+    'apache-airflow-providers-slack==8.8.0' \
+    'apache-airflow-providers-postgres' \
+    joblib pandas scikit-learn mlflow shap prometheus_client scipy xgboost \
+    && echo "ML Dependencies installed successfully."
