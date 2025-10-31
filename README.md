@@ -29,7 +29,7 @@ It demonstrates how **data science, ML, cloud infrastructure, and CI/CD automati
 
 ```
       ┌───────────────────────────┐
-      │   Continuous Data Source  │
+      │ Continuous Data Source    │
       │ (Simulated Live Weather)  │
       └──────────────┬────────────┘
                      │
@@ -38,32 +38,35 @@ It demonstrates how **data science, ML, cloud infrastructure, and CI/CD automati
       │ Apache Airflow (Orchestration)   │
       │ 1. Data Ingestion & Feature Eng. │
       │ 2. Prediction Run (Every 5 min)  │
-      └────────────┬─────────────────────┘
-                   │
-    (Prediction Data)
-                   ▼
-      ┌───────────────────────────────────┐
-      │ PostgreSQL (Transactional Audit)  │
-      │  (Logging Prediction & Telemetry) │
-      └────────────┬──────────────┬───────┘
-                   │              │
-                   ▼              ▼
-  (For Monitoring) (For Retraining, Triggered by Schedule)
-      ┌─────────────────┐ ┌──────────────────────────┐
-      │ Streamlit Monitor & Alerts │ │   ML Model Training (XGBoost)  │
-      └─────────────────┘ └────────────┬─────────────┘
-                                       │
-                                       ▼
-                     ┌───────────────────────────────────┐
-                     │ MLflow Governance & Deployment    │
-                     │ (Promote to 'Production' Registry)│
-                     └────────────┬──────────────────────┘
-                                  │
-                                  ▼
-      ┌──────────────────────────────────┐
-      │ FastAPI Inference Service        │
-      │ (Loads Production Model & Serves)│
-      └──────────────────────────────────┘
+      └──────────────┬───────────────────┘
+                     │
+            (Prediction Data)
+                     │
+                     ▼
+      ┌─────────────────────────────────────────────┐
+      │ PostgreSQL (Transactional Audit)            │
+      │ - Logs Predictions & Telemetry              │
+      └──────────────┬──────────────┬───────────────┘
+                     │              │
+                     │              │
+                     ▼              ▼
+      ┌────────────────────────┐  ┌──────────────────────────────┐
+      │ Streamlit Monitor &    │  │ ML Model Training (XGBoost)  │
+      │ Alerts (Monitoring)    │  │ (Triggered by Schedule)      │
+      └────────────────────────┘  └─────────────┬────────────────┘
+                                               │
+                                               ▼
+                              ┌─────────────────────────────────────────┐
+                              │ MLflow Governance & Deployment          │
+                              │ - Model Registry & Promotion to         │
+                              │       Production' Registry              │
+                              └──────────────┬──────────────────────────┘
+                                             │
+                                             ▼
+                          ┌───────────────────────────────────────┐
+                          │ FastAPI Inference Service             │
+                          │ - Loads Production Model & Serves API │
+                          └───────────────────────────────────────┘
 ```
 ```
 
