@@ -56,7 +56,6 @@ def monitor_endpoint(endpoint_name):
             REQUEST_COUNT.labels(method=method, endpoint=endpoint_name).inc()
 
             try:
-                # FIX: This safely runs the synchronous function in the threadpool
                 response = await run_in_threadpool(func, request, *args, **kwargs)
             except Exception as e:
                 REQUEST_LATENCY.labels(method=method, endpoint=endpoint_name).observe(time.time() - start_time)
@@ -145,7 +144,7 @@ def predict_flood(request: Request, data: dict):
         proba = proba_output[0][list(model.classes_).index(1)].item()
         prediction = int(model.predict(input_df)[0].item())
 
-        # --- SHAP Explainability (REMOVED) ---
+        # --- SHAP Explainability ---
         explanation = {}
 
         # --- Prometheus Metrics ---
