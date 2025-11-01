@@ -11,7 +11,7 @@ x-airflow-common:
     # AIRFLOW CORE
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-    AIRFLOW__CORE__FERNET_KEY: 'A5hT7qpMa2g12NlDa2donhKQ9U-xnU8_ce6L1yJMj7I='
+    AIRFLOW__CORE__FERNET_KEY: 'YOUR AIRFLOW__CORE__FERNET_KEY'
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
     # ML/MONITORING
@@ -19,9 +19,9 @@ x-airflow-common:
     SLACK_WEBHOOK_URL: '{{ var.value.slack_flood_alert }}'
     # DB VARIABLES (Used by Airflow DAGs and Streamlit)
     DB_HOST: postgres
-    DB_NAME: airflow
-    DB_USER: airflow
-    DB_PASSWORD: airflow
+    DB_NAME: name
+    DB_USER: user
+    DB_PASSWORD: PASSWORD
   volumes:
     - ./airflow/dags:/opt/airflow/dags
     - ./airflow/logs:/opt/airflow/logs
@@ -59,7 +59,7 @@ services:
       bash -c "
         # Dependencies are pre-installed in the image
         airflow db init &&
-        airflow users create --username admin --password admin --firstname Vivek --lastname Marri --role Admin --email admin@example.com
+        airflow users create --username admin --password admin --firstname  --lastname  --role Admin --email xyz@example.com
       "
 
   airflow-webserver:
