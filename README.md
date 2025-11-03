@@ -34,7 +34,7 @@ The **Urban Flood Early Warning System** is a highly-professional, production-re
 > **Live: High-impact, executive dashboard for real-time situational awareness**
 
 ### 🌦️ Overview Panel & Risk Meter  
-![Dashboard Main Panel](images/dashboard_main_panel.png)
+![Dashboard Main Panel](images/.png)
 - *Clear at-a-glance risk status, multi-city monitoring, and smart controls for deep drill-downs.*
 
 ### 🔎 Location Risk Mapping  
