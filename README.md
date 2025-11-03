@@ -8,20 +8,22 @@
 
 ---
 
-## 🧭 Overview
+## 🧭 Project Overview
 
-The **Urban Flood Early Warning System** is an end-to-end **AI + MLOps project** that predicts flood risk in urban areas using **real-time sensor data** and **machine learning pipelines**.  
-It demonstrates how **data science, ML, cloud infrastructure, and CI/CD automation** work together to build a **production-ready early warning platform** for urban disaster management.
+The **Urban Flood Early Warning System** is a highly-professional, production-ready **AI + MLOps platform** designed to predict flood risks in urban environments using real-time IoT sensor data and robust machine learning pipelines. This project exemplifies the integration of **data science**, **ML engineering**, **cloud computing**, and **devops/MLOps** to create a reliable disaster management tool that supports city authorities and citizens with real-time insights and actionable alerts.
+
+> **Live: Interactive Demo**  
+> ![Streamlit Dashboard — Real-time Flood Risk Monitoring](images/streamlit_dashboard.png)
 
 ---
 
-## 🎯 Objectives
+## 🎯 Key Objectives
 
-- Predict **urban flood occurrences** using machine learning.
-- Process **real-time IoT sensor data** (rainfall, water level, humidity, etc.).
-- Automate **data pipelines**, **model retraining**, and **deployment** using MLOps.
-- Provide a **Streamlit dashboard** for real-time flood monitoring.
-- Deploy **FastAPI backend** on AWS with **CI/CD automation**.
+- Predict **urban flood events** with >90% accuracy.
+- Process and analyze **real-time IoT sensor feeds** (rainfall, water level, humidity, etc.).
+- Orchestrate automated **data ingestion**, **model retraining**, and **deployment pipelines** using MLOps best practices.
+- Offer an intuitive **dashboard for continuous monitoring** and decision-making.
+- Deploy scalable APIs and dashboards with **FastAPI** and **Streamlit**, fully containerized for production.
 
 ---
 
@@ -68,11 +70,41 @@ It demonstrates how **data science, ML, cloud infrastructure, and CI/CD automati
                           │ - Loads Production Model & Serves API │
                           └───────────────────────────────────────┘
 ```
-```
 
 ---
 
-## 📁 Project Structure
+## 🖼️ Solution Screenshots
+
+### 🚀 Full Stack Boot — All Services Running
+![Full MLOps Stack Booted (Docker Compose)](images/docker_compose_up.png)
+> *All major services (FastAPI, Streamlit, Airflow, Grafana, MLflow, Prometheus, PostgreSQL) up and orchestrated via Docker Compose for seamless integration and reproducibility.*  
+<sup>*Image 1: Proof of modular, containerized MLOps stack boot.*</sup>
+
+---
+
+### 📡 Real-Time ML Pipeline Orchestration
+![Airflow DAG — Automated Orchestration of Flood Prediction](images/airflow_dag.png)
+> *Robust orchestration with Apache Airflow for data ingestion, model inference, database logging, and automated notifications (Slack alerting etc). Monitor DAG health and efficiency interactively.*  
+<sup>*Image 3: Airflow automation for CI/CD and prediction scheduling.*</sup>
+
+---
+
+### 📈 MLflow Governance — Model Tracking & Live Logging
+![MLflow — Flood Prediction Experiment Logging](images/mlflow_experiment.png)
+> *Continuous experiment tracking using MLflow, with live logging of all predictions, training, and experiment metadata. Enables auditability and production governance.*  
+<sup>*Image 2: Transparent tracking of model experiments and inferencing.*</sup>
+
+---
+
+### 🌦️ Professional Dashboard for Monitoring & Analytics
+
+![Streamlit Dashboard — Real-Time Urban Flood Risk Visualization](images/streamlit_dashboard.png)
+> *Interactive dashboard built with Streamlit for dynamic monitoring: live risk stats, multi-city aggregation, visual analytics, and scenario simulation — designed for operational clarity and actionable decision-making.*  
+<sup>*Image 4: End-user interface visualizing all facets of urban flood risk.*</sup>
+
+---
+
+## 📁 Project Directory Structure
 
 ```text
 urban_flood_early_warning/
@@ -98,74 +130,50 @@ urban_flood_early_warning/
 
 ---
 
-## 🧠 Tech Stack
+## 🧠 Technology Stack Overview
 
-| **Category** | **Tools & Technologies** | **Reason/Proof in Project** |
-| :--- | :--- | :--- |
-| **Language** | **Python 3.10** | Standard for data processing and serving layers. |
-| **Orchestration** | **Apache Airflow** | Controls CI/CD (retraining) and continuous prediction loops. |
-| **Serving Layer** | **FastAPI** | High-performance, low-latency asynchronous API serving. |
-| **Front-End/Monitoring** | **Streamlit, Plotly** | Dashboard and interactive geospatial map visualization. |
-| **Database/Audit** | **PostgreSQL** | **Transactional logging (ACID)** for all prediction data. |
-| **Modeling** | **XGBoost, Scikit-learn** | XGBoost (promoted algorithm) and Scikit-learn for calibration/metrics. |
-| **MLOps Governance** | **MLflow (Tracking & Registry)** | Manages model versions and production deployment staging. |
-| **Containerization** | **Docker, Docker Compose** | Guarantees reproducible environments across all services. |
-| **Metrics & Observability** | **Prometheus** | Tracks real-time API latency and request/prediction distribution. |
-
----
-
-## 🔁 ML Workflow
-
-### 1️⃣ Data Ingestion  
-- Fetches historical & real-time data from **MongoDB** and local sources.  
-- Cleans and merges multiple data streams into one consistent schema.  
-
-### 2️⃣ Data Validation  
-- Validates schema using **schema.yaml** to ensure consistency.  
-- Handles missing values, duplicates, and outliers.  
-
-### 3️⃣ Data Transformation  
-- Performs **feature scaling**, encoding, and feature engineering.  
-- Creates **train-test splits** and stores transformed data artifacts.  
-
-### 4️⃣ Model Training  
-- Trains ensemble models (**RandomForest**, **XGBoost**) for flood risk prediction.  
-- Tracks metrics with **MLflow** (Accuracy, Precision, Recall, F1-Score).  
-
-### 5️⃣ Model Evaluation  
-- Compares newly trained models against production models.  
-- Automatically pushes the **best-performing model** to **AWS S3**.  
-
-### 6️⃣ Model Deployment  
-- Deploys using **FastAPI** for real-time inference.  
-- Visualized via **Streamlit dashboard** for flood monitoring and analytics.  
-
-### 7️⃣ MLOps Automation  
-- **CI/CD pipeline** automates build → test → deploy using **GitHub Actions**.  
-- **Docker** ensures consistent runtime environment across development and production.
+| **Category**         | **Stack**                       | **Role in Project**                             |
+| :------------------- | :----------------------------- | :---------------------------------------------- |
+| Programming Language | Python 3.10                     | Foundation for all ML and orchestration logic   |
+| Orchestration        | Apache Airflow                  | DAGs for ETL, inference, retraining, automation |
+| Model Registry/Governance | MLflow                    | Experiment and model lifecycle management       |
+| Model Training       | XGBoost, Scikit-learn           | Ensemble modeling & evaluation                  |
+| Real-Time Serving    | FastAPI                         | Lightning-fast model API                        |
+| Monitoring           | Streamlit, Plotly               | Visualization dashboard                         |
+| Database/Audit       | PostgreSQL                      | Transactional logging of inference data         |
+| Containerization     | Docker, Docker Compose          | Environment reproducibility, isolation          |
+| Metrics/Observability| Prometheus, Grafana             | API/Lifecycle monitoring                        |
 
 ---
 
-## 🌦️ Streamlit Dashboard Features
+## 🔁 ML & Data Workflow
 
-- 📊 **Real-time flood risk visualization** — Displays live predictions and alerts from the deployed model.  
-- 🌍 **Location-based flood probability mapping** — Interactive map showing regional flood probabilities.  
-- 📈 **Model performance metrics dashboard** — Visualizes metrics like Accuracy, Precision, Recall, and F1-Score.  
-- 🔁 **Auto-refresh prediction logs** — Automatically updates logs to reflect the latest predictions.  
-- ⚙️ **Interactive flood scenario simulation** — Allows users to simulate various rainfall and terrain conditions to observe predicted outcomes.  
+1. **Data Ingestion:**  
+   Automated via Airflow; uses both real-time sensor feeds (MongoDB, simulated weather) and historic data for training and inference.
+
+2. **Validation & Transformation:**  
+   Strict validation against `schema.yaml`, followed by feature engineering, outlier handling, and artifact management.
+
+3. **Model Training & Governance:**  
+   Ensemble models (Random Forest, XGBoost) tracked and registered with MLflow for traceability, versioning, and continuous optimization.
+
+4. **Automated Inference & Retraining:**  
+   Orchestrated by Airflow (see screenshot above), predictions and retraining jobs are managed with logs audited via PostgreSQL for full reliability.
+
+5. **CI/CD Automation:**  
+   End-to-end pipeline includes automated GitHub Actions CI/CD, enabling push-to-production with Docker for robust dev-to-deploy parity.
 
 ---
 
-## ⚙️ FastAPI Endpoints
+## ⚡ FastAPI Endpoints 
 
-| **Endpoint**       | **Method** | **Description**                        |
-|--------------------|------------|----------------------------------------|
-| `/predict_flood`   | POST       | Predict flood risk from sensor data    |
-| `/health`          | GET        | API health check                       |
-| `/logs`            | GET        | Retrieve latest prediction logs        |
+| **Endpoint**     | **Method** | **Description**                    |
+| :-------------  | :--------- | :--------------------------------- |
+| `/predict_flood`| POST       | Predict flood risk from sensor data|
+| `/health`       | GET        | API health check                   |
+| `/logs`         | GET        | Retrieve recent prediction logs    |
 
-### 🧩 Example Request
-
+**Example Request:**
 ```json
 {
   "rainfall": 45.2,
@@ -175,9 +183,7 @@ urban_flood_early_warning/
   "soil_moisture": 70.0
 }
 ```
-
-### 🧾 Example Response
-
+**Example Response:**
 ```json
 {
   "flood_risk": "High",
@@ -187,108 +193,98 @@ urban_flood_early_warning/
 
 ---
 
-## ⚙️ Setup & Installation
+## 🚀 Quickstart — Setup & Deployment
 
-### 1️⃣ Clone Repository
+1. **Clone Repository**
+    ```bash
+    git clone https://github.com/VIVEK-MARRI/urban_flood_early_warning.git
+    cd urban_flood_early_warning
+    ```
+2. **Set Up Python Environment**
+    ```bash
+    conda create -n floodenv python=3.10 -y
+    conda activate floodenv
+    pip install -r requirements.txt
+    ```
+3. **Configure Database**
+    Edit `.env`:
+    ```ini
+    POSTGRES_USER=postgres
+    POSTGRES_PASSWORD=yourpassword
+    POSTGRES_DB=flood_db
+    POSTGRES_HOST=localhost
+    POSTGRES_PORT=5432
+    ```
 
-```bash
-git clone https://github.com/VIVEK-MARRI/urban_flood_early_warning.git
-cd urban_flood_early_warning
-```
-
-### 2️⃣ Create Environment
-
-```bash
-conda create -n floodenv python=3.10 -y
-conda activate floodenv
-pip install -r requirements.txt
-```
-
-### 3️⃣ Configure Database
-
-Update your `.env` file:
-
-```ini
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=yourpassword
-POSTGRES_DB=flood_db
-POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
-```
-
-### 4️⃣ Launch Services (Docker Compose)
-
-```bash
-docker-compose up --build
-```
-
-This will start:
-
-- Airflow Scheduler + Webserver
-- PostgreSQL Database
-- FastAPI Backend
-- Streamlit Dashboard
+4. **Launch Complete Stack**
+    ```bash
+    docker-compose up --build
+    ```
+    > ![All containers up](images/docker_compose_up.png)  
+    *All MLOps and analytics services start up together in seconds.*
 
 ---
 
-## 🚀 Airflow Pipeline Overview
+## ⏰ Airflow DAG/Job Schedules
 
-| **DAG Name**         | **Purpose**                    | **Schedule** |
-|----------------------|--------------------------------|--------------|
-| data_ingestion_dag   | Load & clean raw IoT data      | @hourly      |
-| model_training_dag   | Train models & log metrics     | @daily       |
-| model_retrain_dag    | Retrain when drift detected    | @weekly      |
+| **DAG Name**         | **Purpose**                   | **Schedule**    |
+|----------------------|-------------------------------|-----------------|
+| data_ingestion_dag   | Load & clean IoT data         | @hourly         |
+| model_training_dag   | Retrain models, log metrics   | @daily          |
+| model_retrain_dag    | Auto-retrain on drift alert   | @weekly         |
 
-All DAGs are managed in `airflow/dags/`.
-
----
-
-## 🧮 Model Explainability & Monitoring
-
-- **SHAP Values** → Explain which features influence flood risk.
-- **MLflow** → Tracks model versions, hyperparameters, and metrics.
-- **Data Drift Detection** → Automatically retrains when distribution changes.
-- **PostgreSQL Logs** → Ensures transactional data consistency.
+DAGs are located in `airflow/dags/`.  
+> ![Airflow pipeline](images/airflow_dag.png)
 
 ---
 
-## 📊 Key Achievements
+## 📊 Model Monitoring, Observability & Explainability
 
-✅ Achieved >90% accuracy in flood risk prediction.  
-✅ Built fully containerized Airflow + FastAPI + Streamlit ecosystem.  
-✅ Automated ETL → Model → Deployment through Airflow.  
-✅ Integrated real-time dashboards with clean UX.  
-✅ Ensured data integrity & reproducibility with PostgreSQL and MLflow.  
-
----
-
-## ☁️ Deployment Summary
-
-| **Component**   | **Service**       |
-|-----------------|-------------------|
-| Backend API     | FastAPI           |
-| Dashboard       | Streamlit         |
-| Database        | PostgreSQL        |
-| Orchestration   | Apache Airflow    |
-| Containerization| Docker Compose    |
-| Model Tracking  | MLflow            |
+- **MLflow**: Experiment/version tracking for absolute reproducibility
+- **Data Drift**: Automated retraining if prediction distribution shifts
+- **Explainability (SHAP)**: Full transparency into key risk features
+- **PostgreSQL**: Transactional full-log for auditability
+- **Prometheus + Grafana**: Real-time monitoring of system health
 
 ---
 
-## 🔮 Future Enhancements
+## 🥇 Key Milestones
 
-- 🌦️ Integrate satellite imagery (Sentinel) for spatial flood mapping.
-- 📡 Add live rainfall API feeds for better real-time predictions.
-- 🧠 Incorporate LSTM/GRU deep learning models for time-series forecasting.
-- ☁️ Deploy on Kubernetes (EKS/GKE) for scaling.
-- 📩 Add email/SMS alerts for high-risk notifications.
+- 🚀 Achieved >90% predictive accuracy (XGBoost stack)
+- 🐳 End-to-end stack: Airflow, FastAPI, Streamlit, Prometheus, PostgreSQL, MLflow — all live via Docker Compose
+- 🔄 Full CI/CD automation from ETL to deployment
+- 📈 Interactive, real-time risk dashboard for users
+- 🗃️ Unbreakable, version-locked data and model governance
+
+---
+
+## ☁️ Deployment: Service Map
+
+| **Component**   | **Service**          |
+|-----------------|---------------------|
+| Backend API     | FastAPI             |
+| Dashboard       | Streamlit           |
+| Database        | PostgreSQL          |
+| Orchestration   | Apache Airflow      |
+| Containerization| Docker Compose      |
+| Model Tracking  | MLflow              |
+
+---
+
+## 🔮 Future Roadmap
+
+- Integrate satellite imagery (Sentinel) for spatial/remote flood mapping
+- Ingest live rainfall data from public APIs for even fresher predictions
+- Upgrade to LSTM/GRU deep learning models for robust temporal inference
+- Container orchestration on Kubernetes (EKS, GKE) for scale
+- Real-time alerts via email/SMS on critical risk
 
 ---
 
 ## 👨‍💻 Author
 
 **Vivek Marri**  
-💼 AI/ML & MLOps Engineer  
+AI/ML & MLOps Engineer  
 📧 Email: vivekyadavmarri.com  
 🌐 [LinkedIn](https://www.linkedin.com/in/vivek-marri-49419a274/)  
 🐙 [GitHub](https://github.com/VIVEK-MARRI)  
@@ -297,11 +293,19 @@ All DAGs are managed in `airflow/dags/`.
 
 ## 🧾 License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+MIT License — See the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🏁 Final Summary
+## 🏁 Professional Summary
 
-The Urban Flood Early Warning System exemplifies a production-grade AI + MLOps ecosystem — integrating data pipelines, model automation, and deployment into one seamless workflow.  
-It represents the bridge between AI research and operational reliability, showcasing real-world disaster management powered by MLOps excellence.
+This project delivers a truly production-grade, fully-automated, and observable AI + MLOps solution for urban flood disaster mitigation.  
+From raw sensor to actionable dashboard — with bulletproof data, CI/CD, and model discipline — it demonstrates how modern engineering transforms real-world challenges into operational reliability.
+
+```
+**Note:** Add the provided image files (“images/docker_compose_up.png”, “images/mlflow_experiment.png”, “images/airflow_dag.png”, “images/streamlit_dashboard.png”) in the `images/` folder of your repo.  
+Image mapping based on context:
+- Image 1: `docker_compose_up.png` — Full stack boot/log proof
+- Image 2: `mlflow_experiment.png` — MLflow live experiment tracking
+- Image 3: `airflow_dag.png` — Airflow DAG orchestration view
+- Image 4: `streamlit_dashboard.png` — Streamlit flood monitoring dashboard
