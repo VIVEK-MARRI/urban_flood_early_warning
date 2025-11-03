@@ -330,9 +330,3 @@ This project delivers a truly production-grade, fully-automated, and observable 
 From raw sensor to actionable dashboard — with bulletproof data, CI/CD, and model discipline — it demonstrates how modern engineering transforms real-world challenges into operational reliability.
 
 ```
-**Note:** Add the provided image files (“images/docker_compose_up.png”, “images/mlflow_experiment.png”, “images/airflow_dag.png”, “images/streamlit_dashboard.png”) in the `images/` folder of your repo.  
-Image mapping based on context:
-- Image 1: `docker_compose_up.png` — Full stack boot/log proof
-- Image 2: `mlflow_experiment.png` — MLflow live experiment tracking
-- Image 3: `airflow_dag.png` — Airflow DAG orchestration view
-- Image 4: `streamlit_dashboard.png` — Streamlit flood monitoring dashboard
