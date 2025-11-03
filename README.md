@@ -27,6 +27,33 @@ The **Urban Flood Early Warning System** is a highly-professional, production-re
 
 ---
 
+---
+
+## 🎨 User Dashboard — Visual Insights
+
+> **Live: High-impact, executive dashboard for real-time situational awareness**
+
+### 🌦️ Overview Panel & Risk Meter  
+![Dashboard Main Panel](images/dashboard_main_panel.png)
+- *Clear at-a-glance risk status, multi-city monitoring, and smart controls for deep drill-downs.*
+
+### 🔎 Location Risk Mapping  
+![Flood Map Visualization](images/flood_map_telangana.png)
+- *Interactive geospatial flood map for regional and urban exposure with risk-level coloring.*
+
+### 🔄 Real-Time Audit & Logs  
+![Prediction Log Table](images/prediction_log_table.png)
+- *Live-updating PostgreSQL logs ensure transparency, traceability, and data downloadability.*
+
+### 📉 Probability Trend — Multi-City  
+![Probability Trend Graph](images/probability_trend.png)
+- *Track the evolution of flood risk, thresholds, and city-specific trends across time.*
+
+> *All analytics are designed for zero-clutter, high-impact professional presentation—ideal for operational, executive, or research use.*
+
+---
+
+
 ## 🧱 System Architecture
 
 ```
