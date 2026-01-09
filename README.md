@@ -327,6 +327,6 @@ MIT License — See the [LICENSE](LICENSE) file for details.
 ## 🏁 Professional Summary
 
 This project delivers a truly production-grade, fully-automated, and observable AI + MLOps solution for urban flood disaster mitigation.  
-From raw sensor to actionable dashboard — with bulletproof data, CI/CD, and model discipline — it demonstrates how modern engineering transforms real-world challenges into operational reliability. ....
+From raw sensor to actionable dashboard — with bulletproof data, CI/CD, and model discipline — it demonstrates how modern engineering transforms real-world challenges into operational reliability. 
 
 ```
