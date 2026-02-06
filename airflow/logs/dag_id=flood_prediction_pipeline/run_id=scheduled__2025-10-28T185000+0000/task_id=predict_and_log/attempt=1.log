@@ -1,0 +1,88 @@
+[2025-10-29T13:00:39.552+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2025-10-29T13:00:39.576+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: flood_prediction_pipeline.predict_and_log scheduled__2025-10-28T18:50:00+00:00 [queued]>
+[2025-10-29T13:00:39.583+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: flood_prediction_pipeline.predict_and_log scheduled__2025-10-28T18:50:00+00:00 [queued]>
+[2025-10-29T13:00:39.584+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 2
+[2025-10-29T13:00:39.597+0000] {taskinstance.py:2330} INFO - Executing <Task(PythonOperator): predict_and_log> on 2025-10-28 18:50:00+00:00
+[2025-10-29T13:00:39.605+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:61 DeprecationWarning: This process (pid=264) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2025-10-29T13:00:39.605+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'flood_prediction_pipeline', 'predict_and_log', 'scheduled__2025-10-28T18:50:00+00:00', '--job-id', '307', '--raw', '--subdir', 'DAGS_FOLDER/flood_prediction_dag.py', '--cfg-path', '/tmp/tmps8ekdavy']
+[2025-10-29T13:00:39.607+0000] {standard_task_runner.py:63} INFO - Started process 271 to run task
+[2025-10-29T13:00:39.607+0000] {standard_task_runner.py:91} INFO - Job 307: Subtask predict_and_log
+[2025-10-29T13:00:39.651+0000] {task_command.py:426} INFO - Running <TaskInstance: flood_prediction_pipeline.predict_and_log scheduled__2025-10-28T18:50:00+00:00 [running]> on host 45f655694865
+[2025-10-29T13:00:39.731+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='flood_prediction_pipeline' AIRFLOW_CTX_TASK_ID='predict_and_log' AIRFLOW_CTX_EXECUTION_DATE='2025-10-28T18:50:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='scheduled__2025-10-28T18:50:00+00:00'
+[2025-10-29T13:00:39.733+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2025-10-29T13:00:41.075+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/sklearn/ensemble/_base.py:168 UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+[2025-10-29T13:00:41.082+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/sklearn/ensemble/_base.py:168 UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+[2025-10-29T13:00:41.088+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/sklearn/ensemble/_base.py:168 UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+[2025-10-29T13:00:41.094+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/sklearn/ensemble/_base.py:168 UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+[2025-10-29T13:00:41.100+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/sklearn/ensemble/_base.py:168 UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+[2025-10-29T13:00:41.106+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/sklearn/ensemble/_base.py:168 UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+[2025-10-29T13:00:41.208+0000] {logging_mixin.py:188} WARNING - 2025/10/29 13:00:41 WARNING mlflow.utils.git_utils: Failed to import Git (the Git executable is probably not on your PATH), so Git SHA is not available. Error: Failed to initialize: Bad git executable.
+The git executable must be specified in one of the following ways:
+    - be included in your $PATH
+    - be set via $GIT_PYTHON_GIT_EXECUTABLE
+    - explicitly set via git.refresh(<full-path-to-git-executable>)
+
+All git commands will error until this is rectified.
+
+This initial message can be silenced or aggravated in the future by setting the
+$GIT_PYTHON_REFRESH environment variable. Use one of the following values:
+    - quiet|q|silence|s|silent|none|n|0: for no message or exception
+    - warn|w|warning|log|l|1: for a warning message (logging level CRITICAL, displayed by default)
+    - error|e|exception|raise|r|2: for a raised exception
+
+Example:
+    export GIT_PYTHON_REFRESH=quiet
+[2025-10-29T13:00:41.344+0000] {logging_mixin.py:188} WARNING - 2025/10/29 13:00:41 WARNING mlflow.models.model: `artifact_path` is deprecated. Please use `name` instead.
+[2025-10-29T13:00:41.423+0000] {logging_mixin.py:188} INFO - 🏃 View run LivePrediction_2025-10-29_13-00-41 at: http://mlflow:5000/#/experiments/1/runs/b26f948c0fcc49a9bf66d9a354d47a7f
+[2025-10-29T13:00:41.424+0000] {logging_mixin.py:188} INFO - 🧪 View experiment at: http://mlflow:5000/#/experiments/1
+[2025-10-29T13:00:41.450+0000] {logging_mixin.py:188} INFO - ❌ MLflow logging failed: API request to endpoint /api/2.0/mlflow/logged-models failed with error code 404 != 200. Response body: '<!doctype html>
+<html lang=en>
+<title>404 Not Found</title>
+<h1>Not Found</h1>
+<p>The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.</p>
+'
+[2025-10-29T13:00:41.460+0000] {logging_mixin.py:188} WARNING - Traceback (most recent call last):
+[2025-10-29T13:00:41.461+0000] {logging_mixin.py:188} WARNING -   File "/opt/***/dags/flood_prediction_dag.py", line 226, in predict_and_log
+    mlflow.sklearn.log_model(model, artifact_path="prediction_model")
+[2025-10-29T13:00:41.461+0000] {logging_mixin.py:188} WARNING -   File "/home/***/.local/lib/python3.12/site-packages/mlflow/sklearn/__init__.py", line 426, in log_model
+    return Model.log(
+           ^^^^^^^^^^
+[2025-10-29T13:00:41.462+0000] {logging_mixin.py:188} WARNING -   File "/home/***/.local/lib/python3.12/site-packages/mlflow/models/model.py", line 1170, in log
+    model = _create_logged_model(
+            ^^^^^^^^^^^^^^^^^^^^^
+[2025-10-29T13:00:41.462+0000] {logging_mixin.py:188} WARNING -   File "/home/***/.local/lib/python3.12/site-packages/mlflow/tracking/fluent.py", line 2323, in _create_logged_model
+    return MlflowClient()._create_logged_model(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[2025-10-29T13:00:41.463+0000] {logging_mixin.py:188} WARNING -   File "/home/***/.local/lib/python3.12/site-packages/mlflow/tracking/client.py", line 5492, in _create_logged_model
+    return self._tracking_client.create_logged_model(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[2025-10-29T13:00:41.463+0000] {logging_mixin.py:188} WARNING -   File "/home/***/.local/lib/python3.12/site-packages/mlflow/telemetry/track.py", line 30, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+[2025-10-29T13:00:41.463+0000] {logging_mixin.py:188} WARNING -   File "/home/***/.local/lib/python3.12/site-packages/mlflow/tracking/_tracking_service/client.py", line 870, in create_logged_model
+    return self.store.create_logged_model(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[2025-10-29T13:00:41.464+0000] {logging_mixin.py:188} WARNING -   File "/home/***/.local/lib/python3.12/site-packages/mlflow/store/tracking/rest_store.py", line 894, in create_logged_model
+    response_proto = self._call_endpoint(CreateLoggedModel, req_body)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[2025-10-29T13:00:41.464+0000] {logging_mixin.py:188} WARNING -   File "/home/***/.local/lib/python3.12/site-packages/mlflow/store/tracking/rest_store.py", line 201, in _call_endpoint
+    return call_endpoint(
+           ^^^^^^^^^^^^^^
+[2025-10-29T13:00:41.465+0000] {logging_mixin.py:188} WARNING -   File "/home/***/.local/lib/python3.12/site-packages/mlflow/utils/rest_utils.py", line 592, in call_endpoint
+    response = verify_rest_response(response, endpoint)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[2025-10-29T13:00:41.465+0000] {logging_mixin.py:188} WARNING -   File "/home/***/.local/lib/python3.12/site-packages/mlflow/utils/rest_utils.py", line 317, in verify_rest_response
+    raise MlflowException(
+[2025-10-29T13:00:41.466+0000] {logging_mixin.py:188} WARNING - mlflow.exceptions.MlflowException: API request to endpoint /api/2.0/mlflow/logged-models failed with error code 404 != 200. Response body: '<!doctype html>
+<html lang=en>
+<title>404 Not Found</title>
+<h1>Not Found</h1>
+<p>The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.</p>
+'
+[2025-10-29T13:00:41.477+0000] {logging_mixin.py:188} INFO - ✅ Prediction logged: {'prediction': 0, 'probability': 0.0, 'timestamp': '2025-10-29_13-00-41', 'lat': 18.69029874056173, 'lon': 78.1099912007239, 'city': 'Nizamabad'}
+[2025-10-29T13:00:41.488+0000] {python.py:237} INFO - Done. Returned value was: Prediction_Completed
+[2025-10-29T13:00:41.489+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2025-10-29T13:00:41.505+0000] {taskinstance.py:1206} INFO - Marking task as SUCCESS. dag_id=flood_prediction_pipeline, task_id=predict_and_log, run_id=scheduled__2025-10-28T18:50:00+00:00, execution_date=20251028T185000, start_date=20251029T130039, end_date=20251029T130041
+[2025-10-29T13:00:41.547+0000] {local_task_job_runner.py:240} INFO - Task exited with return code 0
+[2025-10-29T13:00:41.567+0000] {taskinstance.py:3498} INFO - 1 downstream tasks scheduled from follow-on schedule check
+[2025-10-29T13:00:41.571+0000] {local_task_job_runner.py:222} INFO - ::endgroup::

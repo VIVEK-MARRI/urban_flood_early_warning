@@ -1,0 +1,18 @@
+[2025-10-30T16:45:25.780+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2025-10-30T16:45:25.836+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: flood_prediction_pipeline.check_flood_risk scheduled__2025-10-30T16:40:00+00:00 [queued]>
+[2025-10-30T16:45:25.863+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: flood_prediction_pipeline.check_flood_risk scheduled__2025-10-30T16:40:00+00:00 [queued]>
+[2025-10-30T16:45:25.874+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 2
+[2025-10-30T16:45:25.927+0000] {taskinstance.py:2330} INFO - Executing <Task(PythonOperator): check_flood_risk> on 2025-10-30 16:40:00+00:00
+[2025-10-30T16:45:25.941+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'flood_prediction_pipeline', 'check_flood_risk', 'scheduled__2025-10-30T16:40:00+00:00', '--job-id', '207', '--raw', '--subdir', 'DAGS_FOLDER/flood_prediction_dag.py', '--cfg-path', '/tmp/tmpvwnt31cx']
+[2025-10-30T16:45:25.951+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:61 DeprecationWarning: This process (pid=617) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2025-10-30T16:45:25.953+0000] {standard_task_runner.py:63} INFO - Started process 620 to run task
+[2025-10-30T16:45:25.945+0000] {standard_task_runner.py:91} INFO - Job 207: Subtask check_flood_risk
+[2025-10-30T16:45:26.072+0000] {task_command.py:426} INFO - Running <TaskInstance: flood_prediction_pipeline.check_flood_risk scheduled__2025-10-30T16:40:00+00:00 [running]> on host 0026fca74e29
+[2025-10-30T16:45:26.275+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='flood_prediction_pipeline' AIRFLOW_CTX_TASK_ID='check_flood_risk' AIRFLOW_CTX_EXECUTION_DATE='2025-10-30T16:40:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='scheduled__2025-10-30T16:40:00+00:00'
+[2025-10-30T16:45:26.299+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2025-10-30T16:45:26.398+0000] {python.py:237} INFO - Done. Returned value was: no_alert_needed
+[2025-10-30T16:45:26.399+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2025-10-30T16:45:26.457+0000] {taskinstance.py:1206} INFO - Marking task as SUCCESS. dag_id=flood_prediction_pipeline, task_id=check_flood_risk, run_id=scheduled__2025-10-30T16:40:00+00:00, execution_date=20251030T164000, start_date=20251030T164525, end_date=20251030T164526
+[2025-10-30T16:45:26.534+0000] {local_task_job_runner.py:240} INFO - Task exited with return code 0
+[2025-10-30T16:45:26.608+0000] {taskinstance.py:3498} INFO - 1 downstream tasks scheduled from follow-on schedule check
+[2025-10-30T16:45:26.629+0000] {local_task_job_runner.py:222} INFO - ::endgroup::

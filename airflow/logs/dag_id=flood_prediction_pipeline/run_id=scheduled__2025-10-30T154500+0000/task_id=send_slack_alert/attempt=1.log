@@ -1,0 +1,102 @@
+[2025-10-30T15:50:09.619+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2025-10-30T15:50:09.639+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: flood_prediction_pipeline.send_slack_alert scheduled__2025-10-30T15:45:00+00:00 [queued]>
+[2025-10-30T15:50:09.647+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: flood_prediction_pipeline.send_slack_alert scheduled__2025-10-30T15:45:00+00:00 [queued]>
+[2025-10-30T15:50:09.648+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 2
+[2025-10-30T15:50:09.660+0000] {taskinstance.py:2330} INFO - Executing <Task(SlackWebhookOperator): send_slack_alert> on 2025-10-30 15:45:00+00:00
+[2025-10-30T15:50:09.667+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:61 DeprecationWarning: This process (pid=3856) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2025-10-30T15:50:09.667+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'flood_prediction_pipeline', 'send_slack_alert', 'scheduled__2025-10-30T15:45:00+00:00', '--job-id', '145', '--raw', '--subdir', 'DAGS_FOLDER/flood_prediction_dag.py', '--cfg-path', '/tmp/tmp2kvxgwlr']
+[2025-10-30T15:50:09.669+0000] {standard_task_runner.py:63} INFO - Started process 3859 to run task
+[2025-10-30T15:50:09.670+0000] {standard_task_runner.py:91} INFO - Job 145: Subtask send_slack_alert
+[2025-10-30T15:50:09.712+0000] {task_command.py:426} INFO - Running <TaskInstance: flood_prediction_pipeline.send_slack_alert scheduled__2025-10-30T15:45:00+00:00 [running]> on host ef4a724a1397
+[2025-10-30T15:50:09.791+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='flood_prediction_pipeline' AIRFLOW_CTX_TASK_ID='send_slack_alert' AIRFLOW_CTX_EXECUTION_DATE='2025-10-30T15:45:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='scheduled__2025-10-30T15:45:00+00:00'
+[2025-10-30T15:50:09.793+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2025-10-30T15:50:09.811+0000] {base.py:84} INFO - Using connection ID 'slack_webhook_default' for task execution.
+[2025-10-30T15:50:17.836+0000] {client.py:219} ERROR - Failed to send a request to Slack API server: <urlopen error [Errno -3] Temporary failure in name resolution>
+[2025-10-30T15:50:17.837+0000] {client.py:231} INFO - A retry handler found: ConnectionErrorRetryHandler for POST *** - <urlopen error [Errno -3] Temporary failure in name resolution>
+[2025-10-30T15:50:18.837+0000] {client.py:240} INFO - Going to retry the same request: POST ***
+[2025-10-30T15:50:26.842+0000] {client.py:219} ERROR - Failed to send a request to Slack API server: <urlopen error [Errno -3] Temporary failure in name resolution>
+[2025-10-30T15:50:26.844+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2025-10-30T15:50:26.845+0000] {taskinstance.py:2905} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/urllib/request.py", line 1344, in do_open
+    h.request(req.get_method(), req.selector, req.data, headers,
+  File "/usr/local/lib/python3.12/http/client.py", line 1336, in request
+    self._send_request(method, url, body, headers, encode_chunked)
+  File "/usr/local/lib/python3.12/http/client.py", line 1382, in _send_request
+    self.endheaders(body, encode_chunked=encode_chunked)
+  File "/usr/local/lib/python3.12/http/client.py", line 1331, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+  File "/usr/local/lib/python3.12/http/client.py", line 1091, in _send_output
+    self.send(msg)
+  File "/usr/local/lib/python3.12/http/client.py", line 1035, in send
+    self.connect()
+  File "/usr/local/lib/python3.12/http/client.py", line 1470, in connect
+    super().connect()
+  File "/usr/local/lib/python3.12/http/client.py", line 1001, in connect
+    self.sock = self._create_connection(
+                ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socket.py", line 828, in create_connection
+    for res in getaddrinfo(host, port, 0, SOCK_STREAM):
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socket.py", line 963, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+socket.gaierror: [Errno -3] Temporary failure in name resolution
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 465, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 432, in _execute_callable
+    return execute_callable(context=context, **execute_callable_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 400, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/slack/operators/slack_webhook.py", line 112, in execute
+    self.hook.send(
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/slack/hooks/slack_webhook.py", line 249, in send
+    return self.send_dict(body=body, headers=headers)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/slack/hooks/slack_webhook.py", line 42, in wrapper
+    resp = func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/slack/hooks/slack_webhook.py", line 206, in send_dict
+    return self.client.send_dict(body, headers=headers)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/slack_sdk/webhook/client.py", line 137, in send_dict
+    return self._perform_http_request(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/slack_sdk/webhook/client.py", line 244, in _perform_http_request
+    raise err
+  File "/home/airflow/.local/lib/python3.12/site-packages/slack_sdk/webhook/client.py", line 164, in _perform_http_request
+    resp = self._perform_http_request_internal(url, req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/slack_sdk/webhook/client.py", line 270, in _perform_http_request_internal
+    http_resp = urlopen(req, context=self.ssl, timeout=self.timeout)  # skipcq: BAN-B310
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/urllib/request.py", line 215, in urlopen
+    return opener.open(url, data, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/urllib/request.py", line 515, in open
+    response = self._open(req, data)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/urllib/request.py", line 532, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/urllib/request.py", line 492, in _call_chain
+    result = func(*args)
+             ^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/urllib/request.py", line 1392, in https_open
+    return self.do_open(http.client.HTTPSConnection, req,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/urllib/request.py", line 1347, in do_open
+    raise URLError(err)
+urllib.error.URLError: <urlopen error [Errno -3] Temporary failure in name resolution>
+[2025-10-30T15:50:26.872+0000] {taskinstance.py:1206} INFO - Marking task as UP_FOR_RETRY. dag_id=flood_prediction_pipeline, task_id=send_slack_alert, run_id=scheduled__2025-10-30T15:45:00+00:00, execution_date=20251030T154500, start_date=20251030T155009, end_date=20251030T155026
+[2025-10-30T15:50:26.890+0000] {standard_task_runner.py:110} ERROR - Failed to execute job 145 for task send_slack_alert (<urlopen error [Errno -3] Temporary failure in name resolution>; 3859)
+[2025-10-30T15:50:26.904+0000] {local_task_job_runner.py:240} INFO - Task exited with return code 1
+[2025-10-30T15:50:26.915+0000] {taskinstance.py:3498} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2025-10-30T15:50:26.918+0000] {local_task_job_runner.py:222} INFO - ::endgroup::
