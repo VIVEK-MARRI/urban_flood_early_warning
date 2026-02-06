@@ -38,10 +38,12 @@ jobs:
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
-        # Install dev dependencies if they exist, otherwise install from generic requirements
+        # Install API requirements (includes mlflow, pandas, etc.)
+        if [ -f api/requirements.txt ]; then pip install -r api/requirements.txt; fi
+        # Install dev dependencies (pytest, black, dvc)
+        if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+        # Fallback for generic requirements if they exist
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        # Install testing tools
-        pip install pytest pylint black
 
     - name: Lint with Black
       run: |
