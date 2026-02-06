@@ -9,7 +9,7 @@ import mlflow
 import mlflow.sklearn
 from datetime import datetime
 from sklearn.model_selection import train_test_split
-import xgboost as xgb
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.metrics import f1_score, recall_score, brier_score_loss
 import mlflow.tracking
@@ -19,24 +19,22 @@ RAW_LOG_PATH = "data/prediction_log.csv"
 MODEL_NAME = "UrbanFloodClassifier"
 TARGET_COLUMN = "flood_risk"
 METRICS_THRESHOLD = 0.95  # Minimum F1 score required for promotion
-TARGET_MODEL_FILE = "/opt/airflow/models/optimized_rf_v2.pkl"
+TARGET_MODEL_FILE = "/opt/airflow/models/urban_flood_model.pkl"
 
 # -----------------------------
 # Feature Engineering & Labeling
 # -----------------------------
 def create_flood_label(df):
-    """Recreates the flood risk proxy label used in initial training."""
-    df["rain_24h_prev"] = df["rain_24h"].shift(1)
-    df["humidity_prev"] = df["humidity"].shift(1)
-    df["pressure_prev"] = df["pressure"].shift(1)
-
+    """
+    Recreates the flood risk proxy label.
+    FIX: Removed shift() so label corresponds to CURRENT conditions.
+    """
     label = (
-        (df["rain_24h_prev"] >= 1.8)
-        & (df["humidity_prev"] >= 75.0)
-        & (df["pressure_prev"] <= 1012.0)
+        (df["rain_24h"] >= 1.8)
+        & (df["humidity"] >= 75.0)
+        & (df["pressure"] <= 1012.0)
     ).astype(int)
 
-    df.drop(columns=["rain_24h_prev", "humidity_prev", "pressure_prev"], inplace=True, errors="ignore")
     return label
 
 
@@ -60,6 +58,10 @@ def preprocess_and_split(df):
     if Xy.empty or len(Xy) < 50:
         raise ValueError(f"Insufficient valid data ({len(Xy)} rows) for training.")
 
+    # Check for class balance
+    if Xy[TARGET_COLUMN].nunique() < 2:
+        raise ValueError("Training data contains only one class. Need both Flood(1) and Safe(0) examples.")
+
     split_idx = int(len(Xy) * 0.8)
     X_train, X_val = Xy.iloc[:split_idx][feature_cols], Xy.iloc[split_idx:][feature_cols]
     y_train, y_val = Xy.iloc[:split_idx][TARGET_COLUMN], Xy.iloc[split_idx:][TARGET_COLUMN]
@@ -82,19 +84,17 @@ def run_retraining_pipeline(run_name):
         return {"f1": -2.0, "recall": -2.0, "run_id": "skipped"}
 
     with mlflow.start_run(run_name=run_name) as run:
-        print("Starting XGBoost training run...")
+        print("Starting Random Forest training run...")
 
-        # --- MODEL DEFINITION: XGBoost ---
-        xgb_model = xgb.XGBClassifier(
+        # --- MODEL DEFINITION: Random Forest ---
+        rf_model = RandomForestClassifier(
             n_estimators=100,
-            max_depth=6,
-            learning_rate=0.1,
-            use_label_encoder=False,
-            eval_metric="logloss",
+            max_depth=10,
+            class_weight='balanced',
             random_state=42
         )
 
-        model = CalibratedClassifierCV(xgb_model, cv=3, method="isotonic")
+        model = CalibratedClassifierCV(rf_model, cv=3, method="isotonic")
         model.fit(X_train, y_train)
 
         # --- Validation ---
@@ -177,7 +177,7 @@ def promote_model_callable(ti):
         os.makedirs(os.path.dirname(TARGET_MODEL_FILE), exist_ok=True)
         joblib.dump(local_model, TARGET_MODEL_FILE)
 
-        print(f"✅ Promoted Model Version {new_version} (XGBoost) to Production (F1: {new_f1:.4f})")
+        print(f"✅ Promoted Model Version {new_version} (RandomForest) to Production (F1: {new_f1:.4f})")
         print(f"✅ Deployed model artifact to {TARGET_MODEL_FILE} for immediate API/DAG use.")
         return "deployment_successful"
 

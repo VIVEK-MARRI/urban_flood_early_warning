@@ -11,6 +11,7 @@ import pandas as pd
 import numpy as np
 import os
 import json # Explicitly import json
+import hashlib # For stable hashing
 import joblib
 import mlflow
 import traceback
@@ -19,7 +20,7 @@ import traceback
 # Paths and Config
 # -----------------------------
 FEATURES_PATH = "models/feature_columns.json"
-MODEL_PATH = "models/optimized_rf_v2.pkl"
+MODEL_PATH = "models/urban_flood_model.pkl"
 DATA_DIR = "/opt/airflow/data"
 LIVE_DATA_PATH = os.path.join(DATA_DIR, "live_data.csv")
 PRED_LOG_PATH = os.path.join(DATA_DIR, "prediction_log.csv")
@@ -84,7 +85,10 @@ def already_processed(latest_row):
         return False
     try:
         comparable_data = {k: v for k, v in latest_row.items() if k not in ['minute', 'second', 'timestamp']}
-        current_hash = str(hash(frozenset(comparable_data.items())))
+        # Use stable SHA-256 hash instead of built-in hash()
+        row_str = json.dumps(comparable_data, sort_keys=True)
+        current_hash = hashlib.sha256(row_str.encode('utf-8')).hexdigest()
+        
         with open(LAST_ROW_HASH, "r") as f:
             last_hash = f.read().strip()
         return current_hash == last_hash
@@ -96,7 +100,10 @@ def save_last_row_hash(latest_row):
     try:
         os.makedirs(os.path.dirname(LAST_ROW_HASH), exist_ok=True)
         comparable_data = {k: v for k, v in latest_row.items() if k not in ['minute', 'second', 'timestamp']}
-        current_hash = str(hash(frozenset(comparable_data.items())))
+        # Use stable SHA-256 hash
+        row_str = json.dumps(comparable_data, sort_keys=True)
+        current_hash = hashlib.sha256(row_str.encode('utf-8')).hexdigest()
+        
         with open(LAST_ROW_HASH, "w") as f:
             f.write(current_hash)
     except Exception:

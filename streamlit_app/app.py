@@ -4,6 +4,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from streamlit_autorefresh import st_autorefresh
 import requests, os, numpy as np, json
+import hashlib # For stable hashing
 from datetime import datetime
 import psycopg2
 from psycopg2 import extras
@@ -11,11 +12,11 @@ from psycopg2 import extras
 # -----------------------------
 # Config
 # -----------------------------
-API_URL = "http://flood_api:8000/predict_flood"
+API_URL = os.environ.get("API_URL", "http://flood_api:8000/predict_flood")
 DB_HOST = os.environ.get("DB_HOST", "postgres")
 DB_NAME = os.environ.get("DB_NAME", "airflow")
 DB_USER = os.environ.get("DB_USER", "airflow")
-DB_PASSWORD = os.environ.get("DB_PASSWORD", "airflow")
+DB_PASSWORD = os.environ.get("DB_PASSWORD")
 DB_TABLE = "flood_predictions_log"
 
 LIVE_DATA_PATH = "./data/live_data.csv"
@@ -50,9 +51,37 @@ FLOOD_THRESHOLD = 0.75
 # -----------------------------
 # Page setup
 # -----------------------------
-st.set_page_config(page_title="Urban Flood Dashboard", layout="wide")
-st.title("🌧 Urban Flood Early Warning System")
+# -----------------------------
+# Page setup & Custom CSS
+# -----------------------------
+st.set_page_config(page_title="Urban Flood Dashboard", layout="wide", page_icon="🌧️")
 st_autorefresh(interval=10 * 1000, key="dashboard_refresh")
+
+st.markdown("""
+<style>
+    .metric-card {
+        background-color: #1E1E1E;
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px solid #333;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    .metric-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #FFFFFF;
+    }
+    .metric-label {
+        font-size: 14px;
+        color: #AAAAAA;
+    }
+    .risk-high { color: #FF4B4B; }
+    .risk-safe { color: #00CC96; }
+</style>
+""", unsafe_allow_html=True)
+
+st.title("🌧 Urban Flood Early Warning System")
 
 # -----------------------------
 # Database Query Function
@@ -128,16 +157,24 @@ def already_processed(latest_row):
         return False
     try:
         comparable = {k: v for k, v in latest_row.items() if k not in ["minute", "second", "timestamp"]}
+        # Use stable SHA-256 hash
+        row_str = json.dumps(comparable, sort_keys=True)
+        current_hash = hashlib.sha256(row_str.encode('utf-8')).hexdigest()
+        
         with open(LAST_CALL_FILE) as f:
-            return f.read().strip() == str(hash(frozenset(comparable.items())))
+            return f.read().strip() == current_hash
     except:
         return False
 
 def save_last_processed(latest_row):
     os.makedirs(os.path.dirname(LAST_CALL_FILE), exist_ok=True)
     comparable = {k: v for k, v in latest_row.items() if k not in ["minute", "second", "timestamp"]}
+    # Use stable SHA-256 hash
+    row_str = json.dumps(comparable, sort_keys=True)
+    current_hash = hashlib.sha256(row_str.encode('utf-8')).hexdigest()
+    
     with open(LAST_CALL_FILE, "w") as f:
-        f.write(str(hash(frozenset(comparable.items()))))
+        f.write(current_hash)
 
 def play_alert_sound():
     st.markdown(
@@ -206,134 +243,86 @@ with tab1:
         latest_prediction = latest.get("prediction", 0)
         latest_probability = latest.get("probability", 0.0)
         
-        # --- 1. HEADER METRICS ROW (NEW) ---
-        
         # Calculate summary metrics (Averaged over all log data)
-        # Using a small epsilon to prevent division by zero on empty dataframes
-        num_cities = len(TELANGANA_CITIES)
-        avg_risk_prob = df_log['probability'].mean() if not df_log.empty else 0.0
         avg_rain_24h = df_log['rain_24h'].mean() if 'rain_24h' in df_log.columns and not df_log.empty else 0.0
 
+        # --- 1. KEY METRICS ROW (Custom Cards) ---
         col_A, col_B, col_C, col_D = st.columns(4)
 
         with col_A:
-            st.metric(
-                label="Current Risk",
-                value=f"{latest_probability * 100:.1f}%",
-                delta=f"{'HIGH' if latest_prediction == 1 else 'SAFE'}"
-            )
+            risk_class = "risk-high" if latest_prediction == 1 else "risk-safe"
+            risk_text = "HIGH RISK" if latest_prediction == 1 else "SAFE"
+            st.markdown(f"""
+            <div class="metric-card">
+                <div class="metric-label">Current Status</div>
+                <div class="metric-value {risk_class}">{risk_text}</div>
+            </div>
+            """, unsafe_allow_html=True)
 
         with col_B:
-            st.metric(
-                label="Cities Monitored",
-                value=num_cities
-            )
+            st.markdown(f"""
+            <div class="metric-card">
+                <div class="metric-label">Flood Probability</div>
+                <div class="metric-value">{latest_probability * 100:.1f}%</div>
+            </div>
+            """, unsafe_allow_html=True)
 
         with col_C:
-            st.metric(
-                label="Avg 24h Rain (mm)",
-                value=f"{avg_rain_24h:.2f}"
-            )
+            st.markdown(f"""
+            <div class="metric-card">
+                <div class="metric-label">Cities Monitored</div>
+                <div class="metric-value">{len(TELANGANA_CITIES)}</div>
+            </div>
+            """, unsafe_allow_html=True)
 
         with col_D:
-            st.metric(
-                label="Avg Risk Probability",
-                value=f"{avg_risk_prob * 100:.1f}%"
-            )
+            st.markdown(f"""
+            <div class="metric-card">
+                <div class="metric-label">Avg 24h Rain</div>
+                <div class="metric-value">{avg_rain_24h:.2f} mm</div>
+            </div>
+            """, unsafe_allow_html=True)
 
-        st.markdown("---") # Visual separator
-
-        # --- Alert Banner ---
-        if latest_prediction == 1:
-            st.markdown(
-                f"<div style='background-color:#cc0000; padding:10px; border-radius:5px; text-align:center;'>"
-                f"🚨 HIGH FLOOD RISK! Probability: {latest_probability*100:.1f}%</div>",
-                unsafe_allow_html=True,
-            )
-            if not check_alert_repeat(True):
-                trigger_high_risk_alert()
-        else:
-            st.markdown(
-                f"<div style='background-color:#28a745; color:white; padding:12px; border-radius:8px; text-align:center; font-weight:bold;'>"
-                f"✅ SAFE. Probability: {latest_probability*100:.1f}%</div>",
-                unsafe_allow_html=True,
-            )
-            check_alert_repeat(False)
-
-        col1, col2, col3 = st.columns([1, 1, 2])
-
-        with col1:
-            fig_gauge = go.Figure(
-                go.Indicator(
-                    mode="gauge+number",
-                    value=latest_probability * 100,
-                    title={"text": "Flood Probability (%)"},
-                    gauge={
-                        "axis": {"range": [0, 100]},
-                        "bar": {"color": risk_color(latest_prediction)},
-                        "steps": [
-                            {"range": [0, 50], "color": "lightgreen"},
-                            {"range": [50, 75], "color": "yellow"},
-                            {"range": [75, 100], "color": "lightcoral"},
-                        ],
-                    },
-                )
-            )
-            st.plotly_chart(fig_gauge, use_container_width=True)
-
-        with col2:
-            color = risk_color(latest_prediction)
-            st.markdown(f"<h2 style='color:{color}'>{'⚠ HIGH RISK' if latest_prediction==1 else '✅ SAFE'}</h2>", unsafe_allow_html=True)
-            st.write(f"⏱ Last Prediction Time: {latest.get('timestamp', 'N/A')}")
-
-        with col3:
-            key_features = ["rain_24h", "humidity", "temp", "pressure"]
-            features_data = {f: latest.get(f) for f in key_features if f in latest}
-            if features_data:
-                feat_df = pd.DataFrame.from_dict(features_data, orient="index", columns=["Value"]).reset_index().rename(columns={"index": "Feature"})
-                feat_df["Color"] = risk_color(latest_prediction)
-                fig_bar = px.bar(feat_df, x="Feature", y="Value", color="Color", color_discrete_map="identity")
-                st.plotly_chart(fig_bar, use_container_width=True)
-       
-
-        # --- Telangana Flood Map ---
         st.markdown("---")
-        st.subheader("🗺 Telangana Flood Map")
+
+        # --- 2. Telangana Flood Map (Prominent) ---
+        st.subheader("🗺 Real-Time Flood Risk Map")
 
         df_base_map = pd.DataFrame(
             [{"city": c, "lat": loc[0], "lon": loc[1], "size_default": 5} for c, loc in TELANGANA_CITIES.items()]
         )
 
         df_latest_status = df_log.groupby("city").last().reset_index()
-        df_latest_status["risk_status_pred"] = df_latest_status["prediction"].map({1: "HIGH RISK", 0: "Safe"})
-        df_latest_status["size_scaled"] = df_latest_status["probability"] * 20 + 5
-
+        # Use simple gradient for size and color
         df_map = df_base_map.merge(
-            df_latest_status[["city", "risk_status_pred", "size_scaled", "probability"]],
+            df_latest_status[["city", "prediction", "probability"]],
             on="city",
             how="left"
-        )
+        ).fillna({"prediction": 0, "probability": 0})
 
-        df_map['risk_level'] = df_map['risk_status_pred'].fillna('No Data')
-        df_map['marker_size'] = df_map['size_scaled'].fillna(df_base_map['size_default'])
-        df_map['probability_score'] = df_map['probability'].fillna(0)
-
-        color_map = {"HIGH RISK": "red", "Safe": "green", "No Data": "gray"}
+        # Dynamic Marker Logic
+        df_map["marker_size"] = 10 + (df_map["probability"] * 25) # 10 to 35px
+        df_map["risk_label"] = df_map["probability"].apply(lambda x: f"{x*100:.1f}% Risk")
 
         fig_map = px.scatter_mapbox(
             df_map,
             lat="lat",
             lon="lon",
-            color="risk_level",
+            color="probability",
             size="marker_size",
-            hover_data={"city": True, "probability_score": True, "risk_level": True},
-            zoom=6,
+            hover_name="city",
+            hover_data={"probability": ":.2f", "prediction": False, "marker_size": False},
+            color_continuous_scale=["#00CC96", "#FFD700", "#FF4B4B"], # Green -> Yellow -> Red
+            range_color=[0, 1],
+            zoom=6.5,
             center={"lat": 17.8, "lon": 79.5},
-            mapbox_style="open-street-map",
-            color_discrete_map=color_map,
+            mapbox_style="carto-darkmatter",
+            height=600,
         )
-        fig_map.update_traces(marker=dict(size=df_map["marker_size"] * 1.5, opacity=0.9))
+        fig_map.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
         st.plotly_chart(fig_map, use_container_width=True)
+        
+        st.markdown("---")
 
         # --- Probability Trend ---
         st.subheader("📈 Probability Trend")

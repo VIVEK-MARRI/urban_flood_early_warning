@@ -1,0 +1,56 @@
+# Secrets
+.env
+.secrets
+secrets.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# IDEs
+.vscode/
+.idea/
+
+# Project Specific
+airflow/logs/
+airflow/*.pid
+airflow/airflow-webserver.monitor.pid
+urban-flood-system.db
+
+# DVC
+/dvc_store
+.dvc/tmp/
+.dvc/cache/
+
+# Data
+data/*.csv
+data/*.parquet
+!data/*.dvc
+
+# OS
+.DS_Store
+Thumbs.db

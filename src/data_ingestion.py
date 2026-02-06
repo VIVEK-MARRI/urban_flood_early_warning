@@ -5,7 +5,7 @@ from datetime import datetime
 import os
 
 # ---- CONFIG ----
-API_KEY = "52ca078b59c3685cb762cbc7dd9ad5fa"
+API_KEY = os.getenv("OPENWEATHER_API_KEY")
 CITY = "Hyderabad,in"
 DATA_PATH = "data/flood_data.csv"
 

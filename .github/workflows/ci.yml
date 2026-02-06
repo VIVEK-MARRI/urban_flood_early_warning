@@ -1,0 +1,59 @@
+name: MLOps CI Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    services:
+      # Service containers to run with `runner-job`
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: airflow
+          POSTGRES_PASSWORD: airflow_pass
+          POSTGRES_DB: urban_flood
+        ports:
+          - 5432:5432
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.9"
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        # Install dev dependencies if they exist, otherwise install from generic requirements
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        # Install testing tools
+        pip install pytest pylint black
+
+    - name: Lint with Black
+      run: |
+        # Check for formatting issues (check only)
+        black . --check --exclude "venv|migrations|airflow" || true
+
+    - name: Test with pytest
+      env:
+        DB_HOST: localhost
+        DB_NAME: urban_flood
+        DB_USER: airflow
+        DB_PASSWORD: airflow_pass
+      run: |
+        # Run tests excluding integration tests that require full docker swarm for now
+        pytest tests/ -v

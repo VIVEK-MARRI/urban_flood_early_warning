@@ -1,17 +1,17 @@
 version: '3.9'
 
 x-airflow-common:
-  &airflow-common
   # NEW: Build the custom Dockerfile with pre-installed dependencies
+  &airflow-common
   build:
     context: .
-    dockerfile: Dockerfile.airflow 
-  
+    dockerfile: Dockerfile.airflow
+
   environment:
     # AIRFLOW CORE
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
-    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-    AIRFLOW__CORE__FERNET_KEY: 'A5hT7qpMa2g12NlDa2donhKQ9U-xnU8_ce6L1yJMj7I='
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres/${POSTGRES_DB}
+    AIRFLOW__CORE__FERNET_KEY: '${AIRFLOW_FERNET_KEY}'
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
     # ML/MONITORING
@@ -19,9 +19,9 @@ x-airflow-common:
     SLACK_WEBHOOK_URL: '{{ var.value.slack_flood_alert }}'
     # DB VARIABLES (Used by Airflow DAGs and Streamlit)
     DB_HOST: postgres
-    DB_NAME: airflow
-    DB_USER: airflow
-    DB_PASSWORD: airflow
+    DB_NAME: ${POSTGRES_DB}
+    DB_USER: ${POSTGRES_USER}
+    DB_PASSWORD: ${POSTGRES_PASSWORD}
   volumes:
     - ./airflow/dags:/opt/airflow/dags
     - ./airflow/logs:/opt/airflow/logs
@@ -33,20 +33,20 @@ x-airflow-common:
   depends_on:
     - postgres
     - mlflow
-    - fastapi 
+    - fastapi
 
 services:
   postgres:
     image: postgres:13
     container_name: postgres
     environment:
-      POSTGRES_USER: airflow
-      POSTGRES_PASSWORD: airflow
-      POSTGRES_DB: airflow
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_db:/var/lib/postgresql/data
     ports:
-      - "5432:5432" 
+      - "5435:5432"
 
   # --- AIRFLOW SERVICES (Use custom image) ---
   airflow-init:
@@ -59,7 +59,7 @@ services:
       bash -c "
         # Dependencies are pre-installed in the image
         airflow db init &&
-        airflow users create --username admin --password admin --firstname Vivek --lastname Marri --role Admin --email admin@example.com
+        airflow users create --username $${AIRFLOW_ADMIN_USER:-admin} --password $${AIRFLOW_ADMIN_PASSWORD:-admin} --firstname Vivek --lastname Marri --role Admin --email admin@example.com
       "
 
   airflow-webserver:
@@ -69,7 +69,7 @@ services:
     ports:
       - "8081:8080"
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      test: [ "CMD", "curl", "--fail", "http://localhost:8080/health" ]
       interval: 10s
       retries: 5
       start_period: 30s
@@ -89,11 +89,8 @@ services:
     image: ghcr.io/mlflow/mlflow:v2.14.2
     container_name: mlflow
     command: >
-      mlflow server
-      --backend-store-uri sqlite:///mlflow.db
-      --default-artifact-root /mlflow/artifacts
-      --host 0.0.0.0
-      --port 5000
+      mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root /mlflow/artifacts --host 0.0.0.0 --port 5000
+
     ports:
       - "5000:5000"
     volumes:
@@ -103,8 +100,8 @@ services:
   # --- FASTAPI SERVICE ---
   fastapi:
     build:
-      context: ./api
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: api/Dockerfile
     container_name: flood_api
     restart: always
     ports:
@@ -114,7 +111,7 @@ services:
       PROMETHEUS_ENDPOINT: /metrics
     volumes:
       - ./models:/app/models
-    command: ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+    command: [ "uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000" ]
     networks:
       default:
         aliases:
@@ -128,19 +125,19 @@ services:
     container_name: flood_dashboard
     restart: always
     ports:
-      - "8501:8501" 
-    environment: 
+      - "8501:8501"
+    environment:
       DB_HOST: postgres
-      DB_NAME: airflow
-      DB_USER: airflow
-      DB_PASSWORD: airflow
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - ./data:/app/data
       - ./models:/app/models
     depends_on:
       - fastapi
-      - postgres 
-      
+      - postgres
+
   # --- MONITORING SERVICES ---
   prometheus:
     image: prom/prometheus:latest
@@ -167,7 +164,7 @@ services:
     restart: unless-stopped
     depends_on:
       - prometheus
-      
+
 volumes:
   postgres_db:
   prometheus_data:
