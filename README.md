@@ -1,7 +1,7 @@
 # 🌊 Urban Flood Early Warning System (UFEWS)
 ### Enterprise-Grade MLOps Platform for Disaster Risk Prediction
 
-[![CI Pipeline](https://img.shields.io/badge/CI-GitHub%20Actions-blue?style=for-the-badge&logo=githubactions)](https://github.com/your-username/urban-flood-system/actions)
+[![CI Pipeline](https://img.shields.io/badge/CI-GitHub%20Actions-blue?style=for-the-badge&logo=githubactions)](https://github.com/VIVEK-MARRI/urban_flood_early_warning/actions)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue?style=for-the-badge&logo=python)](https://www.python.org/)
 [![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
 [![Code Style](https://img.shields.io/badge/Code%20Style-Black-000000?style=for-the-badge)](https://github.com/psf/black)
@@ -21,33 +21,33 @@ The following diagram illustrates the high-level architecture and data flow of t
 
 ```mermaid
 graph LR
-    subgraph Data_Layer [Data Ops]
+    subgraph Data_Layer ["Data Ops"]
         direction TB
-        Raw[Raw Weather Data] -->|DVC Tracking| DVC_Store[(DVC Local Storage)]
+        Raw["Raw Weather Data"] -->|DVC Tracking| DVC_Store[("DVC Local Storage")]
         DVC_Store -->|dvc pull| Pipeline
     end
 
-    subgraph Pipeline [Orchestration (Airflow)]
+    subgraph Pipeline ["Orchestration (Airflow)"]
         direction TB
-        Ingest[Data Ingestion] --> Preprocess[Preprocessing]
-        Preprocess --> Train[XGBoost Training]
-        Train --> Evaluate[Model Evaluation]
-        Evaluate -->|Threshold Pass| Register[Register Model]
+        Ingest["Data Ingestion"] --> Preprocess[Preprocessing]
+        Preprocess --> Train["XGBoost Training"]
+        Train --> Evaluate["Model Evaluation"]
+        Evaluate -->|Threshold Pass| Register["Register Model"]
     end
 
-    subgraph Experimentation [MLflow Platform]
-        Train -.->|Log Params & Metrics| Tracking[Tracking Server]
-        Register -.->|Version Control| Registry[Model Registry]
+    subgraph Experimentation ["MLflow Platform"]
+        Train -.->|Log Params & Metrics| Tracking["Tracking Server"]
+        Register -.->|Version Control| Registry["Model Registry"]
     end
 
-    subgraph Serving [Production Serving]
-        Registry -->|Load Version| API[FastAPI Service]
-        API <-->|REST| Dashboard[Streamlit UI]
+    subgraph Serving ["Production Serving"]
+        Registry -->|Load Version| API["FastAPI Service"]
+        API <-->|REST| Dashboard["Streamlit UI"]
     end
 
-    subgraph Observability [Monitoring Stack]
+    subgraph Observability ["Monitoring Stack"]
         API -.->|Expose Metrics| Prometheus
-        Prometheus -->|Visualize| Grafana[Grafana Dashboards]
+        Prometheus -->|Visualize| Grafana["Grafana Dashboards"]
     end
 
     Data_Layer --> Pipeline
@@ -82,8 +82,8 @@ Deploy the entire MLOps stack with a single command.
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-username/urban-flood-system.git
-cd urban-flood-system
+git clone https://github.com/VIVEK-MARRI/urban_flood_early_warning.git
+cd urban_flood_early_warning
 
 # 2. Start the application (Background mode)
 make up
@@ -158,5 +158,5 @@ urban-flood-system/
 
 ---
 
-## � License
+## 📜 License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
